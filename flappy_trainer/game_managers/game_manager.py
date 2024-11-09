@@ -7,17 +7,28 @@ class GameManager(BaseGameManager):
     def __init__(self):
         super().__init__()
         self.bird = Bird()
+        self.is_game_paused = False
 
     def handle_event(self, event):
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_SPACE:
-                pass
+                self.bird.flap()
 
     def update(self):
-        pass
+        if self.bird.is_alive and not self.is_game_paused:
+            self.bird.update()
+            self.check_bird_collision()
+
+    def check_bird_collision(self):
+        top_collision = self.bird.y - self.bird.radius <= 0
+        bottom_collision = self.bird.y + self.bird.radius >= self.SCREEN_HEIGHT
+
+        if top_collision or bottom_collision:
+            self.bird.die()
+            self.is_game_over = True
 
     def draw(self):
-        self.screen.fill((135, 206, 250))  # Sky blue
+        super().draw()
 
         # Draw game objects
         self.bird.draw(self.screen)

@@ -12,6 +12,7 @@ class Bird:
         self.radius = get_env_var_as_int("BIRD_RADIUS")
         self.color = get_env_var_as_tuple("BIRD_COLOR")
         self.velocity = 0
+        self.is_alive = True
 
     def update(self):
         """
@@ -25,6 +26,9 @@ class Bird:
         Make the bird flap upwards by adjusting the velocity.
         """
         self.velocity = -8  # Move the bird upwards
+
+    def die(self):
+        self.is_alive = False
 
     def draw(self, screen):
         """
