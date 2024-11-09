@@ -1,13 +1,12 @@
 import pygame
-from dotenv import load_dotenv
 from game_managers.base_game_manager import BaseGameManager
-
-load_dotenv()
+from game_objects.bird import Bird
 
 
 class GameManager(BaseGameManager):
     def __init__(self):
         super().__init__()
+        self.bird = Bird()
 
     def handle_event(self, event):
         if event.type == pygame.KEYDOWN:
@@ -18,10 +17,10 @@ class GameManager(BaseGameManager):
         pass
 
     def draw(self):
-        pygame.display.set_caption("Flappy Trainer")
         self.screen.fill((135, 206, 250))  # Sky blue
 
         # Draw game objects
+        self.bird.draw(self.screen)
 
         # Update the display
         pygame.display.flip()

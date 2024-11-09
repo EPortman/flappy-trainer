@@ -1,10 +1,16 @@
 import sys
 
 import pygame
-from game_manager import GameManager
+from game_managers.game_manager import GameManager
 
 pygame.init()
-game_manager = GameManager()
+
+try:
+    game_manager = GameManager()
+except EnvironmentError as e:
+    print(f"Error in .env: {e}")
+    pygame.quit()
+    sys.exit(1)
 
 while True:
     for event in pygame.event.get():
