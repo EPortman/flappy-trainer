@@ -1,5 +1,6 @@
-import pygame
 import sys
+
+import pygame
 from game_manager import GameManager
 
 pygame.init()
