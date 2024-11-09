@@ -1,18 +1,13 @@
-import os
-
 import pygame
 from dotenv import load_dotenv
+from game_managers.base_game_manager import BaseGameManager
 
 load_dotenv()
 
 
-class GameManager:
+class GameManager(BaseGameManager):
     def __init__(self):
-        self.SCREEN_WIDTH = int(os.getenv("SCREEN_WIDTH", 800))
-        self.SCREEN_HEIGHT = int(os.getenv("SCREEN_HEIGHT", 600))
-        self.screen = pygame.display.set_mode((self.SCREEN_WIDTH, self.SCREEN_HEIGHT))
-        self.clock = pygame.time.Clock()
-        pygame.display.set_caption("Flappy Trainer")
+        super().__init__()
 
     def handle_event(self, event):
         if event.type == pygame.KEYDOWN:
