@@ -1,9 +1,5 @@
-import os
-
 import pygame
-from dotenv import load_dotenv
-
-load_dotenv()
+from utils import get_env_var_as_int, get_env_var_as_tuple
 
 
 class Bird:
@@ -11,17 +7,11 @@ class Bird:
         """
         Initialize the bird.
         """
-        try:
-            self.x = int(os.getenv("BIRD_START_X_POS"))
-            self.y = int(os.getenv("BIRD_START_Y_POS"))
-            self.radius = int(os.getenv("BIRD_RADIUS"))
-            self.color = tuple(map(int, os.getenv("BIRD_COLOR").split(",")))
-            self.velocity = 0
-        except TypeError:
-            raise EnvironmentError(
-                "One or more required environment variables are missing: "
-                "BIRD_START_X_POS, BIRD_START_Y_POS, BIRD_RADIUS, BIRD_COLOR"
-            )
+        self.x = get_env_var_as_int("BIRD_START_X_POS")
+        self.y = get_env_var_as_int("BIRD_START_Y_POS")
+        self.radius = get_env_var_as_int("BIRD_RADIUS")
+        self.color = get_env_var_as_tuple("BIRD_COLOR")
+        self.velocity = 0
 
     def update(self):
         """
