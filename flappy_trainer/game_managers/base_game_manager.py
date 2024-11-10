@@ -4,6 +4,7 @@ from utils import get_env_var_as_int, get_env_var_as_tuple
 
 class BaseGameManager:
     def __init__(self):
+        """Initialize the base game manager."""
         self.SCREEN_WIDTH = get_env_var_as_int("SCREEN_WIDTH")
         self.SCREEN_HEIGHT = get_env_var_as_int("SCREEN_HEIGHT")
         self.screen = pygame.display.set_mode((self.SCREEN_WIDTH, self.SCREEN_HEIGHT))
@@ -18,6 +19,7 @@ class BaseGameManager:
         pygame.display.set_caption("Flappy Trainer")
 
     def draw(self):
+        """Draw the basic game canvas."""
         self.screen.fill(get_env_var_as_tuple("BACKGROUND_COLOR"))
         pygame.draw.rect(
             self.screen,

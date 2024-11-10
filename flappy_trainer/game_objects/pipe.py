@@ -5,7 +5,8 @@ from utils import get_env_var_as_int, get_env_var_as_tuple
 
 
 class Pipe:
-    def __init__(self, x_pos=get_env_var_as_int("SCREEN_WIDTH")):
+    def __init__(self, x_pos: int = get_env_var_as_int("SCREEN_WIDTH")):
+        """Initialize the pipe."""
         self.x_pos = x_pos
         self.width = get_env_var_as_int("PIPE_WIDTH")
         self.min_gap_height = get_env_var_as_int("PIPE_MIN_GAP_HEIGHT")
@@ -17,7 +18,7 @@ class Pipe:
         self.bottom_height = self.top_height + self.gap_height
         self.update_rects()
 
-    def update_position(self, speed):
+    def update_position(self, speed: int):
         """Move the pipe left by a certain speed and update its rectangles."""
         self.x_pos -= speed
         self.update_rects()
@@ -32,12 +33,15 @@ class Pipe:
             pygame.display.get_surface().get_height() - self.bottom_height,
         )
 
-    def collides_with(self, bird_rect):
+    def collides_with(self, bird_rect: pygame.rect) -> bool:
+        """Returns whether pipe has made contact with the bird."""
         return bird_rect.colliderect(self.top_rect) or bird_rect.colliderect(self.bottom_rect)
 
-    def draw(self, screen):
+    def draw(self, screen: pygame.Surface):
+        """Draws the pipe onto the screen."""
         pygame.draw.rect(screen, self.color, self.top_rect)
         pygame.draw.rect(screen, self.color, self.bottom_rect)
 
-    def is_off_screen(self):
+    def is_off_screen(self) -> bool:
+        """Returns whether the pipe has travelled off the screen."""
         return self.x_pos + self.width < 0
