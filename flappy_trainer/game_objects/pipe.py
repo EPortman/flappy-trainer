@@ -8,6 +8,7 @@ class Pipe:
     def __init__(self, x_pos: int = get_env_var_as_int("SCREEN_WIDTH")):
         """Initialize the pipe."""
         self.x_pos = x_pos
+        self.passed = False
         self.width = get_env_var_as_int("PIPE_WIDTH")
         self.min_gap_height = get_env_var_as_int("PIPE_MIN_GAP_HEIGHT")
         self.max_gap_height = get_env_var_as_int("PIPE_MAX_GAP_HEIGHT")

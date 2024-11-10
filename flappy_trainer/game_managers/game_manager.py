@@ -21,6 +21,9 @@ class GameManager(BaseGameManager):
         self.bird = Bird()
         self.pipes = []
         self.state = GameState.RUNNING
+        self.level = self.start_level
+        self.score = self.start_score
+        self.next_level_score = self.score + self.score_per_level_up
 
     def handle_event(self, event: pygame.event.Event):
         """Handle user input events based on the current game state."""
@@ -48,11 +51,18 @@ class GameManager(BaseGameManager):
         self.bird.update()
         self.check_bird_collision()
         self.update_pipes(delta_time)
+        if self.score >= self.next_level_score:
+            self.level += 1
+            self.pipe_speed += self.pipe_speed_increase_per_level_up
+            self.next_level_score += self.score_per_level_up
 
     def update_pipes(self, delta_time: float):
         """Move pipes and spawn new ones based on time elapsed."""
         for pipe in self.pipes:
             pipe.update_position(self.pipe_speed * delta_time)
+            if not pipe.passed and (pipe.x_pos + pipe.width) < self.bird.x:
+                self.score += 1
+                pipe.passed = True
         self.pipes = [pipe for pipe in self.pipes if not pipe.is_off_screen()]
 
         self.time_since_last_pipe += delta_time * 1000
@@ -80,6 +90,20 @@ class GameManager(BaseGameManager):
                 self.state = GameState.GAME_OVER
                 break
 
+    def draw_hud(self):
+        """Draw the HUD with score and level."""
+        # Render score and level text
+        score_text = self.font.render(f"Score: {self.score}", True, (255, 255, 255))
+        level_text = self.font.render(f"Level: {self.level}", True, (255, 255, 255))
+
+        # Set the positions of the text
+        score_rect = score_text.get_rect(topleft=(10, 10))
+        level_rect = level_text.get_rect(topleft=(10, 50))
+
+        # Draw text on the screen
+        self.screen.blit(score_text, score_rect)
+        self.screen.blit(level_text, level_rect)
+
     def draw(self):
         """Draw all game objects onto the screen."""
         super().draw()
@@ -91,5 +115,6 @@ class GameManager(BaseGameManager):
             self.bird.draw(self.screen)
             for pipe in self.pipes:
                 pipe.draw(self.screen)
+            self.draw_hud()
 
         pygame.display.flip()
