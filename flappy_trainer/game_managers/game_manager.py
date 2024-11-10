@@ -2,7 +2,7 @@ from random import randint
 
 import pygame
 from game_managers.base_game_manager import BaseGameManager
-from game_objects.bird import Bird
+from game_objects.bird.bird import Bird
 from game_objects.pipe import Pipe
 from utils import GameState
 
@@ -60,7 +60,7 @@ class GameManager(BaseGameManager):
         """Move pipes and spawn new ones based on time elapsed."""
         for pipe in self.pipes:
             pipe.update_position(self.pipe_speed * delta_time)
-            if not pipe.passed and (pipe.x_pos + pipe.width) < self.bird.x:
+            if not pipe.passed and (pipe.x_pos + pipe.width) < self.bird.x_pos:
                 self.score += 1
                 pipe.passed = True
         self.pipes = [pipe for pipe in self.pipes if not pipe.is_off_screen()]
@@ -75,8 +75,8 @@ class GameManager(BaseGameManager):
 
     def check_bird_collision(self):
         """Check for collisions between the bird and obstacles."""
-        top_collision = self.bird.y - self.bird.radius <= 0
-        bottom_collision = self.bird.y + self.bird.radius >= self.SCREEN_HEIGHT
+        top_collision = self.bird.y_pos - self.bird.radius <= 0
+        bottom_collision = self.bird.y_pos + self.bird.radius >= self.SCREEN_HEIGHT
 
         if top_collision or bottom_collision:
             self.bird.die()
