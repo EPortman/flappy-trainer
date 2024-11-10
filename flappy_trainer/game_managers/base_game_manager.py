@@ -14,7 +14,8 @@ class BaseGameManager:
         self.border_thickness = get_env_var_as_int("BORDER_THICKNESS")
         self.border_color = get_env_var_as_tuple("BORDER_COLOR")
         self.pipe_speed = get_env_var_as_int("PIPE_SPEED")
-        self.time_between_pipes = get_env_var_as_int("START_TIME_BETWEEN_PIPES")
+        self.min_time_between_pipes = get_env_var_as_int("MIN_TIME_BETWEEN_PIPES")
+        self.max_time_between_pipes = get_env_var_as_int("MAX_TIME_BETWEEN_PIPES")
         self.pipe_timer = 0
         self.time_since_last_pipe = 0
         self.clock = pygame.time.Clock()

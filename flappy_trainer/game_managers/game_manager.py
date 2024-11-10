@@ -1,3 +1,5 @@
+from random import randint
+
 import pygame
 from game_managers.base_game_manager import BaseGameManager
 from game_objects.bird import Bird
@@ -12,6 +14,7 @@ class GameManager(BaseGameManager):
         self.state = GameState.START_MENU
         self.bird = None
         self.pipes = []
+        self.time_between_pipes = randint(self.min_time_between_pipes, self.max_time_between_pipes)
 
     def start_game(self):
         """Initialize game objects and start the game."""
@@ -56,6 +59,9 @@ class GameManager(BaseGameManager):
         if self.time_since_last_pipe >= self.time_between_pipes:
             self.pipes.append(Pipe(self.SCREEN_WIDTH))
             self.time_since_last_pipe = 0
+            self.time_between_pipes = randint(
+                self.min_time_between_pipes, self.max_time_between_pipes
+            )
 
     def check_bird_collision(self):
         """Check for collisions between the bird and obstacles."""
