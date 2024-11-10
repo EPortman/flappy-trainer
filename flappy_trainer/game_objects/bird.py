@@ -27,6 +27,12 @@ class Bird:
         """
         self.velocity = -8  # Move the bird upwards
 
+    def get_rect(self):
+        """Return the bird's bounding rectangle for collision detection."""
+        return pygame.Rect(
+            self.x - self.radius, self.y - self.radius, self.radius * 2, self.radius * 2
+        )
+
     def die(self):
         self.is_alive = False
 

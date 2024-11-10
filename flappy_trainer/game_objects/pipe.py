@@ -15,21 +15,29 @@ class Pipe:
         max_top_height = get_env_var_as_int("SCREEN_HEIGHT") - self.gap_height - 50
         self.top_height = randint(50, max_top_height)
         self.bottom_height = self.top_height + self.gap_height
+        self.update_rects()
 
-    def move(self, speed):
+    def update_position(self, speed):
+        """Move the pipe left by a certain speed and update its rectangles."""
         self.x_pos -= speed
+        self.update_rects()
+
+    def update_rects(self):
+        """Update the position of the top and bottom rectangles based on current x_pos."""
+        self.top_rect = pygame.Rect(self.x_pos, 0, self.width, self.top_height)
+        self.bottom_rect = pygame.Rect(
+            self.x_pos,
+            self.bottom_height,
+            self.width,
+            pygame.display.get_surface().get_height() - self.bottom_height,
+        )
+
+    def collides_with(self, bird_rect):
+        return bird_rect.colliderect(self.top_rect) or bird_rect.colliderect(self.bottom_rect)
 
     def draw(self, screen):
-        pygame.draw.rect(
-            screen, self.color, pygame.Rect(self.x_pos, 0, self.width, self.top_height)
-        )
-        pygame.draw.rect(
-            screen,
-            self.color,
-            pygame.Rect(
-                self.x_pos, self.bottom_height, self.width, screen.get_height() - self.bottom_height
-            ),
-        )
+        pygame.draw.rect(screen, self.color, self.top_rect)
+        pygame.draw.rect(screen, self.color, self.bottom_rect)
 
     def is_off_screen(self):
         return self.x_pos + self.width < 0

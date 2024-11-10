@@ -25,7 +25,7 @@ class GameManager(BaseGameManager):
     def update_pipes(self, delta_time):
         # Move pipes and remove any that have gone off-screen
         for pipe in self.pipes:
-            pipe.move(self.pipe_speed)
+            pipe.update_position(self.pipe_speed * delta_time)
         self.pipes = [pipe for pipe in self.pipes if not pipe.is_off_screen()]
 
         # Add new pipe
@@ -41,6 +41,14 @@ class GameManager(BaseGameManager):
         if top_collision or bottom_collision:
             self.bird.die()
             self.is_game_over = True
+            return
+
+        bird_rect = self.bird.get_rect()
+        for pipe in self.pipes:
+            if pipe.collides_with(bird_rect):
+                self.bird.die()
+                self.is_game_over = True
+                break
 
     def draw(self):
         super().draw()
