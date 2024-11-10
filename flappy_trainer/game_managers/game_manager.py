@@ -2,28 +2,49 @@ import pygame
 from game_managers.base_game_manager import BaseGameManager
 from game_objects.bird import Bird
 from game_objects.pipe import Pipe
+from utils import GameState
 
 
 class GameManager(BaseGameManager):
     def __init__(self):
-        """Initialize the game manager."""
+        """Initialize the game manager with the initial state and menus."""
         super().__init__()
+        self.state = GameState.START_MENU
+        self.bird = None
+        self.pipes = []
+
+    def start_game(self):
+        """Initialize game objects and start the game."""
         self.bird = Bird()
         self.pipes = []
-        self.is_game_paused = False
+        self.state = GameState.RUNNING
 
     def handle_event(self, event: pygame.event.Event):
-        """Handle user input events."""
+        """Handle user input events based on the current game state."""
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_SPACE:
-                self.bird.flap()
+                if self.state == GameState.START_MENU:
+                    self.start_game()
+                elif self.state == GameState.GAME_OVER:
+                    self.start_game()
+                elif self.state == GameState.PAUSED:
+                    self.state = GameState.RUNNING
+                elif self.state == GameState.RUNNING:
+                    self.bird.flap()
+            elif event.key == pygame.K_p and self.state == GameState.RUNNING:
+                self.state = GameState.PAUSED
 
     def update(self, delta_time: float):
-        """Update game objects and check collisions."""
-        if self.bird.is_alive and not self.is_game_paused:
-            self.bird.update()
-            self.check_bird_collision()
-            self.update_pipes(delta_time)
+        """Update game objects and check collisions if game is live."""
+        if (
+            self.state == GameState.START_MENU
+            or self.state == GameState.GAME_OVER
+            or self.state == GameState.PAUSED
+        ):
+            return
+        self.bird.update()
+        self.check_bird_collision()
+        self.update_pipes(delta_time)
 
     def update_pipes(self, delta_time: float):
         """Move pipes and spawn new ones based on time elapsed."""
@@ -43,22 +64,26 @@ class GameManager(BaseGameManager):
 
         if top_collision or bottom_collision:
             self.bird.die()
-            self.is_game_over = True
+            self.state = GameState.GAME_OVER
             return
 
         bird_rect = self.bird.get_rect()
         for pipe in self.pipes:
             if pipe.collides_with(bird_rect):
                 self.bird.die()
-                self.is_game_over = True
+                self.state = GameState.GAME_OVER
                 break
 
     def draw(self):
         """Draw all game objects onto the screen."""
         super().draw()
-
-        self.bird.draw(self.screen)
-        for pipe in self.pipes:
-            pipe.draw(self.screen)
+        if self.state == GameState.START_MENU or self.state == GameState.GAME_OVER:
+            self.start_menu.draw(self.screen)
+        elif self.state == GameState.PAUSED:
+            self.pause_menu.draw(self.screen)
+        else:
+            self.bird.draw(self.screen)
+            for pipe in self.pipes:
+                pipe.draw(self.screen)
 
         pygame.display.flip()

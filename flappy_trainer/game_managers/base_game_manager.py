@@ -1,4 +1,6 @@
 import pygame
+from game_menus.pause_menu import PauseMenu
+from game_menus.start_menu import StartMenu
 from utils import get_env_var_as_int, get_env_var_as_tuple
 
 
@@ -17,6 +19,8 @@ class BaseGameManager:
         self.time_since_last_pipe = 0
         self.clock = pygame.time.Clock()
         pygame.display.set_caption("Flappy Trainer")
+        self.start_menu = StartMenu()
+        self.pause_menu = PauseMenu()
 
     def draw(self):
         """Draw the basic game canvas."""
