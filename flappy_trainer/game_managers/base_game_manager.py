@@ -20,7 +20,9 @@ class BaseGameManager:
         self.start_level = get_env_var_as_int("START_LEVEL")
         self.start_score = get_env_var_as_int("START_SCORE")
         self.score_per_level_up = get_env_var_as_int("SCORE_PER_LEVEL_UP")
-        self.pipe_speed_increase_per_level_up = get_env_var_as_int("PIPE_SPEED_INCREASE_PER_LEVEL_UP")
+        self.pipe_speed_increase_per_level_up = get_env_var_as_int(
+            "PIPE_SPEED_INCREASE_PER_LEVEL_UP"
+        )
         self.pipe_timer = 0
         self.time_since_last_pipe = 0
         self.clock = pygame.time.Clock()

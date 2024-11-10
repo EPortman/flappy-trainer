@@ -48,7 +48,7 @@ class GameManager(BaseGameManager):
             or self.state == GameState.PAUSED
         ):
             return
-        self.bird.update()
+        self.bird.update(delta_time)
         self.check_bird_collision()
         self.update_pipes(delta_time)
         if self.score >= self.next_level_score:
