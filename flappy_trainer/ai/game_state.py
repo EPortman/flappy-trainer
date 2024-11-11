@@ -1,3 +1,6 @@
+import numpy as np
+
+
 class GameState:
     def __init__(
         self,
@@ -14,3 +17,15 @@ class GameState:
         self.next_pipe_top_open_pos = next_pipe_top_open_pos
         self.next_pipe_bot_open_pos = next_pipe_bot_open_pos
         self.pipe_velocity = pipe_velocity
+
+    def to_numpy_array(self) -> np.array:
+        return np.array(
+            [
+                self.bird_vert_pos,
+                self.bird_vert_velocity,
+                self.distance_to_next_pipe,
+                self.next_pipe_top_open_pos,
+                self.next_pipe_bot_open_pos,
+                self.pipe_velocity,
+            ]
+        )
