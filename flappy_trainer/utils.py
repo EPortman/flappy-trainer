@@ -32,6 +32,11 @@ class BirdFrame(Enum):
     FLAPPING_END = 10
 
 
+class PipeColor(Enum):
+    GREEN = "GREEN"
+    RED = "RED"
+
+
 def get_env_var_as_int(var_name):
     """Retrieve an env variable as an integer. Throws Env Error if not available."""
     value = os.getenv(var_name)
