@@ -4,7 +4,7 @@ import pygame
 from game_managers.base_game_manager import BaseGameManager
 from game_objects.bird.bird import Bird
 from game_objects.pipe.pipe import Pipe
-from utils import GameState, PipeColor
+from utils import GameState, PipeColor, get_env_var_as_int
 
 
 class GameManager(BaseGameManager):
@@ -23,6 +23,7 @@ class GameManager(BaseGameManager):
         self.state = GameState.RUNNING
         self.level = self.start_level
         self.score = self.start_score
+        self.pipe_speed = get_env_var_as_int("PIPE_SPEED")
         self.next_level_score = self.score + self.score_per_level_up
 
     def handle_event(self, event: pygame.event.Event):
