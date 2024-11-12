@@ -35,9 +35,19 @@ class Bird(BaseBird):
         return current_frame_image.get_rect(topleft=(self.x_pos, self.y_pos))
 
     def draw(self, screen: pygame.Surface) -> None:
-        """Draw the bird on the screen."""
+        """Draw the bird on the screen and show its hit radius for debugging."""
+        # Draw the bird's current sprite
         current_image = self.sprite_sheet.get_frame(self.current_frame)
         screen.blit(current_image, (self.x_pos, self.y_pos))
+        
+        # Calculate the center of the bird for the hit radius
+        bird_center = (
+            self.x_pos + current_image.get_width() // 2,
+            self.y_pos + current_image.get_height() // 2
+        )
+        
+        # Draw the hit radius as a circle (for debugging)
+        pygame.draw.circle(screen, (255, 0, 0), bird_center, self.radius, 3)
 
     def reset(self) -> None:
         """Reset the bird's position, velocity, and state."""

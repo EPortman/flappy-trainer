@@ -5,7 +5,7 @@ from tensorflow.keras.models import Sequential
 
 from flappy_trainer.ai.ai_utils import Action
 from flappy_trainer.ai.environment_state import EnvironmentState
-from flappy_trainer.ai.experience import Experience
+from flappy_trainer.ai.knowledge import Knowledge
 
 
 class ReinforcementLearningAgent:
@@ -13,7 +13,7 @@ class ReinforcementLearningAgent:
 
     def __init__(self):
         self.model: Sequential = None
-        self.memory: list[Experience] = []
+        self.memory: list[Knowledge] = []
         self.exploration_rate = 1.0
 
     def create_model(self):
@@ -33,3 +33,9 @@ class ReinforcementLearningAgent:
             flap_probability = self.model.predict(state.to_numpy_array())[0][0]
             action = Action.FLAP if flap_probability > 0.5 else Action.NO_FLAP
         return action
+
+    def remember(self, knowledge: Knowledge):
+        self.memory.append(knowledge)
+
+    def replay(batch_size: int):
+        print("TO_DO")

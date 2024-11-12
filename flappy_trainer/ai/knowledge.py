@@ -5,7 +5,7 @@ from flappy_trainer.ai.environment_state import EnvironmentState
 
 
 @dataclass
-class Experience:
+class Knowledge:
     state: EnvironmentState
     action: Action
     reward: float

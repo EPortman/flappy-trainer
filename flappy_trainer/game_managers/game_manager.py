@@ -2,8 +2,6 @@ from random import randint
 
 import pygame
 
-from flappy_trainer.ai.ai_utils import Action
-from flappy_trainer.ai.environment_state import EnvironmentState
 from flappy_trainer.game_managers.base_game_manager import BaseGameManager
 from flappy_trainer.game_objects.bird.bird import Bird
 from flappy_trainer.game_objects.pipe.pipe import Pipe
@@ -74,13 +72,6 @@ class GameManager(BaseGameManager):
             self._draw_hud()
 
         pygame.display.flip()
-
-    def ai_apply_action(self, action: Action) -> tuple[float, EnvironmentState, bool, int]:
-        if action == Action.FLAP:
-            self.bird.flap()
-
-        delta_time = 1 / 60
-        self.update(delta_time)
 
     def _update_pipes(self, delta_time: float):
         """Move pipes and spawn new ones based on time elapsed."""
