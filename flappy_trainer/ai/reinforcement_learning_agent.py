@@ -4,12 +4,12 @@ from tensorflow.keras.layers import Dense
 from tensorflow.keras.models import Sequential
 
 from flappy_trainer.ai.ai_utils import Action
+from flappy_trainer.ai.environment_state import EnvironmentState
 from flappy_trainer.ai.experience import Experience
-from flappy_trainer.ai.game_state import GameState
 
 
 class ReinforcementLearningAgent:
-    NUM_INPUTS = 6
+    NUM_INPUTS = 7
 
     def __init__(self):
         self.model: Sequential = None
@@ -26,7 +26,7 @@ class ReinforcementLearningAgent:
         )
         self.model.compile(optimizer="adam", loss="binary_crossentropy")
 
-    def choose_action(self, state: GameState) -> Action:
+    def choose_action(self, state: EnvironmentState) -> Action:
         if random.random() < self.exploration_rate:
             action = random.choice([Action.FLAP, Action.NO_FLAP])
         else:

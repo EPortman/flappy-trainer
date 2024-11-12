@@ -5,7 +5,7 @@ import numpy as np
 from flappy_trainer.utils import get_env_var_as_int
 
 
-class GameState:
+class EnvironmentState:
     def __init__(
         self,
         bird_vert_pos: int,
@@ -14,6 +14,7 @@ class GameState:
         next_pipe_top_open_pos: int,
         next_pipe_bot_open_pos: int,
         pipe_velocity: int,
+        game_level: int,
     ):
         self.bird_vert_pos = bird_vert_pos
         self.bird_vert_velocity = bird_vert_velocity
@@ -21,6 +22,7 @@ class GameState:
         self.next_pipe_top_open_pos = next_pipe_top_open_pos
         self.next_pipe_bot_open_pos = next_pipe_bot_open_pos
         self.pipe_velocity = pipe_velocity
+        self.game_level = game_level
 
     def to_numpy_array(self) -> np.array:
         return np.array(
@@ -31,11 +33,12 @@ class GameState:
                 self.next_pipe_top_open_pos,
                 self.next_pipe_bot_open_pos,
                 self.pipe_velocity,
+                self.game_level,
             ]
         )
 
     @classmethod
-    def get_initial_game_state(cls) -> "GameState":
+    def get_initial_game_state(cls) -> "EnvironmentState":
         init_bird_vert_pos = get_env_var_as_int("BIRD_START_Y_POS")
         init_bird_vert_velocity = get_env_var_as_int("BIRD_START_Y_VELOCITY")
         init_pipe_speed = get_env_var_as_int("PIPE_SPEED") * (1 / 60)
@@ -47,4 +50,5 @@ class GameState:
             next_pipe_top_open_pos=None,
             next_pipe_bot_open_pos=None,
             pipe_velocity=init_pipe_speed,
+            game_level=1,
         )
