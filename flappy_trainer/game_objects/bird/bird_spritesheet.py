@@ -1,5 +1,6 @@
 import pygame
-from utils import BirdFrame, get_env_var_as_int, get_env_var_as_string
+
+from flappy_trainer.utils import BirdFrame, get_env_var_as_int, get_env_var_as_string
 
 
 class BirdSpriteSheet:

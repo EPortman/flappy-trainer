@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
-from ai.game_state import GameState
-from ai.utils import Action
+from flappy_trainer.ai.ai_utils import Action
+from flappy_trainer.ai.game_state import GameState
 
 
 @dataclass

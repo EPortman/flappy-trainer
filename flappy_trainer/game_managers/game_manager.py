@@ -1,10 +1,11 @@
 from random import randint
 
 import pygame
-from game_managers.base_game_manager import BaseGameManager
-from game_objects.bird.bird import Bird
-from game_objects.pipe.pipe import Pipe
-from utils import GameState, PipeColor, get_env_var_as_int
+
+from flappy_trainer.game_managers.base_game_manager import BaseGameManager
+from flappy_trainer.game_objects.bird.bird import Bird
+from flappy_trainer.game_objects.pipe.pipe import Pipe
+from flappy_trainer.utils import GameState, PipeColor, get_env_var_as_int
 
 
 class GameManager(BaseGameManager):

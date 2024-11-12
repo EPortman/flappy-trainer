@@ -1,5 +1,6 @@
 import pygame
-from utils import get_env_var_as_tuple
+
+from flappy_trainer.utils import get_env_var_as_tuple
 
 
 class StartMenu:

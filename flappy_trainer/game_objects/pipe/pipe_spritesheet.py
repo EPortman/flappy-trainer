@@ -1,5 +1,11 @@
 import pygame
-from utils import PipeColor, get_env_var_as_float, get_env_var_as_int, get_env_var_as_string
+
+from flappy_trainer.utils import (
+    PipeColor,
+    get_env_var_as_float,
+    get_env_var_as_int,
+    get_env_var_as_string,
+)
 
 
 class PipeSpriteSheet:

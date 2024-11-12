@@ -1,7 +1,8 @@
 import pygame
-from game_menus.pause_menu import PauseMenu
-from game_menus.start_menu import StartMenu
-from utils import get_env_var_as_int, get_env_var_as_tuple
+
+from flappy_trainer.game_menus.pause_menu import PauseMenu
+from flappy_trainer.game_menus.start_menu import StartMenu
+from flappy_trainer.utils import get_env_var_as_int, get_env_var_as_tuple
 
 
 class BaseGameManager:

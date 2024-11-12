@@ -1,6 +1,7 @@
 import pygame
-from game_objects.bird.bird_base import BaseBird
-from utils import BirdFrame, BirdState, get_env_var_as_int
+
+from flappy_trainer.game_objects.bird.bird_base import BaseBird
+from flappy_trainer.utils import BirdFrame, BirdState, get_env_var_as_int
 
 
 class Bird(BaseBird):

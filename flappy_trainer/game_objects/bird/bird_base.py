@@ -1,5 +1,5 @@
-from game_objects.bird.bird_spritesheet import BirdSpriteSheet
-from utils import (
+from flappy_trainer.game_objects.bird.bird_spritesheet import BirdSpriteSheet
+from flappy_trainer.utils import (
     BirdFrame,
     BirdState,
     get_env_var_as_float,

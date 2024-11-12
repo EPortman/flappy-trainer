@@ -1,8 +1,9 @@
 from random import randint
 
 import pygame
-from game_objects.pipe.pipe_spritesheet import PipeSpriteSheet
-from utils import PipeColor, get_env_var_as_int
+
+from flappy_trainer.game_objects.pipe.pipe_spritesheet import PipeSpriteSheet
+from flappy_trainer.utils import PipeColor, get_env_var_as_int
 
 
 class Pipe:

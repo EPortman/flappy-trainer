@@ -1,7 +1,8 @@
 import sys
 
 import pygame
-from game_managers.game_manager import GameManager
+
+from flappy_trainer.game_managers.game_manager import GameManager
 
 try:
     pygame.init()
