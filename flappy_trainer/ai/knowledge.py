@@ -6,10 +6,10 @@ from flappy_trainer.ai.environment_state import EnvironmentState
 
 @dataclass
 class Knowledge:
-    state: EnvironmentState
+    pre_state: EnvironmentState
     action: Action
     reward: float
-    next_state: EnvironmentState
+    post_state: EnvironmentState
 
     def as_tuple(self) -> tuple:
-        return tuple(self.state, self.action, self.reward, self.next_state)
+        return tuple(self.pre_state, self.action, self.reward, self.post_state)
