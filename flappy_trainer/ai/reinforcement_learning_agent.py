@@ -2,7 +2,7 @@ import random
 from collections import deque
 
 import numpy as np
-from tensorflow.keras.layers import Dense
+from tensorflow.keras.layers import BatchNormalization, Dense, Dropout
 from tensorflow.keras.models import Sequential
 
 from flappy_trainer.ai.ai_utils import Action
@@ -21,7 +21,7 @@ class ReinforcementLearningAgent:
         self.model: Sequential = None
         self.memory: deque[Knowledge] = deque(maxlen=AGENT_MAX_MEMORY)
         self.exploration_rate = 1.0
-        self.discount_factor = 0.9
+        self.discount_factor = 0.8
         self.min_exploration_rate = 0.1
         self.exploration_decay = 0.995
 
@@ -29,12 +29,17 @@ class ReinforcementLearningAgent:
         """Define and compile the neural network model."""
         self.model = Sequential(
             [
-                Dense(24, input_dim=EnvironmentState.get_num_features(), activation="relu"),
-                Dense(24, activation="relu"),
-                Dense(1, activation="sigmoid"),
+                Dense(128, input_dim=EnvironmentState.get_num_features(), activation="relu"),
+                BatchNormalization(),
+                Dropout(0.2),
+                Dense(128, activation="relu"),
+                BatchNormalization(),
+                Dropout(0.2),
+                Dense(64, activation="relu"),
+                Dense(2, activation="linear"),  # Output Q-values for both actions
             ]
         )
-        self.model.compile(optimizer="adam", loss="binary_crossentropy")
+        self.model.compile(optimizer="adam", loss="mean_squared_error")
 
     def choose_action(self, state: EnvironmentState) -> Action:
         """Choose an action based on exploration vs exploitation."""
@@ -42,8 +47,8 @@ class ReinforcementLearningAgent:
             return random.choice([Action.FLAP, Action.NO_FLAP])
 
         state_array = state.to_numpy_array(include_batch_dim=True)
-        flap_probability = self.model.predict(state_array, verbose=0)[0][0]
-        return Action.FLAP if flap_probability > 0.5 else Action.NO_FLAP
+        q_values = self.model.predict(state_array, verbose=0)[0]
+        return Action.FLAP if q_values[0] > q_values[1] else Action.NO_FLAP
 
     def remember(self, knowledge: Knowledge):
         """Store experience in memory with a fixed buffer size."""
@@ -56,16 +61,29 @@ class ReinforcementLearningAgent:
         batch = random.sample(self.memory, batch_size)
         states = []
         targets = []
+
         for knowledge in batch:
-            reward_from_action = knowledge.reward
+            pre_state_array = knowledge.pre_state.to_numpy_array(include_batch_dim=False)
+            q_values = self.model.predict(pre_state_array.reshape(1, -1), verbose=0)[0]
+
+            # Determine action index (0 for FLAP, 1 for NO_FLAP)
+            action_index = 0 if knowledge.action == Action.FLAP else 1
+
+            # Compute reward update
             if knowledge.post_state is not None and knowledge.post_state.bird_is_alive:
                 next_state_array = knowledge.post_state.to_numpy_array(include_batch_dim=True)
-                future_reward = self.model.predict(next_state_array, verbose=0)[0][0]
-                reward_from_action += self.discount_factor * future_reward
-            states.append(knowledge.pre_state.to_numpy_array())
-            targets.append([reward_from_action])
+                future_q_values = self.model.predict(next_state_array, verbose=0)[0]
+                future_reward = max(future_q_values)  # Max Q-value for the next state
+                q_values[action_index] = knowledge.reward + self.discount_factor * future_reward
+            else:
+                q_values[action_index] = knowledge.reward  # Terminal state
+
+            states.append(pre_state_array)
+            targets.append(q_values)
+
         # Train the model
         self.model.fit(np.array(states), np.array(targets), epochs=1, verbose=0)
+
         # Decay exploration rate
         self.exploration_rate = max(
             self.min_exploration_rate, self.exploration_rate * self.exploration_decay

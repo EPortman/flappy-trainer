@@ -9,7 +9,7 @@ class Action(Enum):
     NO_FLAP = 0
 
 
-def get_distance_to_next_pipe(self, game_manager: GameManager) -> int | None:
+def get_distance_to_next_pipe(game_manager: GameManager) -> int | None:
     unpassed_pipes = [pipe for pipe in game_manager.pipes if pipe.passed is False]
     if not unpassed_pipes:
         return None
@@ -18,7 +18,7 @@ def get_distance_to_next_pipe(self, game_manager: GameManager) -> int | None:
     return distance_to_pipe
 
 
-def get_nearest_pipe_heights(self, game_manager: GameManager) -> tuple[int, int] | None:
+def get_nearest_pipe_heights(game_manager: GameManager) -> tuple[int, int] | None:
     unpassed_pipes = [pipe for pipe in game_manager.pipes if pipe.passed is False]
     if not unpassed_pipes:
         return None
@@ -26,7 +26,7 @@ def get_nearest_pipe_heights(self, game_manager: GameManager) -> tuple[int, int]
     return (closest_pipe.top_height, closest_pipe.bottom_height)
 
 
-def get_curr_pipe_velocity(self, game_manager: GameManager) -> int:
+def get_curr_pipe_velocity(game_manager: GameManager) -> int:
     pipe_base_speed = get_env_var_as_int("PIPE_SPEED")
     pipe_speed_increase_per_level_up = get_env_var_as_int("PIPE_SPEED_INCREASE_PER_LEVEL_UP")
     delta_time = 1 / 60

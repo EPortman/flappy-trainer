@@ -20,15 +20,25 @@ class AITrainer:
     Trainer for the Flappy Bird AI. Handles running episodes, managing game states,
     and training the reinforcement learning agent.
     """
+
     def __init__(self):
         self.game_manager = GameManager()
         self.agent = ReinforcementLearningAgent()
-        self.episodes = 100
+        self.episodes = 10000
         self.batch_size = 32
         self.replay_interval = 10  # Replay every 10 frames
         self.frame_count = 0  # Count frames since last replay
 
-    def train(self, debug=True) -> Sequential:
+    def train(self, debug=True, decision_interval=10) -> Sequential:
+        """
+        Train the agent by running episodes of the game.
+
+        Args:
+            debug (bool): If True, includes a delay for real-time visualization.
+            decision_interval (int): Number of frames to skip between decisions.
+        Returns:
+            Sequential: The trained model.
+        """
         self.agent.create_model()
         for episode in range(self.episodes):
             self.game_manager.start_game()
@@ -36,11 +46,16 @@ class AITrainer:
 
             while self.game_manager.state is GameState.RUNNING:
                 self.frame_count += 1
-
+                action = Action.NO_FLAP
                 # Update game state and draw the frame
                 current_state = self._get_current_state()
-                action = self.agent.choose_action(current_state)
-                self._apply_action(action)
+
+                # Make a decision only at specified intervals
+                if self.frame_count % decision_interval == 0:
+                    action = self.agent.choose_action(current_state)
+                    self._apply_action(action)
+
+                # Update the game state regardless of decision interval
                 self.game_manager.update(1 / 60)
                 self.game_manager.draw()
 
@@ -48,7 +63,7 @@ class AITrainer:
                     time.sleep(1 / 60)
 
                 # Calculate reward and store knowledge
-                reward = -10 if self.game_manager.state == GameState.GAME_OVER else 1
+                reward = -100 if self.game_manager.state == GameState.GAME_OVER else 1
                 knowledge = self._create_knowledge(current_state, action, reward)
                 self.agent.remember(knowledge)
                 total_reward += reward
@@ -61,6 +76,11 @@ class AITrainer:
                     self.agent.replay(self.batch_size)
 
             print(f"Episode {episode + 1} / {self.episodes}, Total Reward: {total_reward}")
+            print(
+                f"Q-values: {self.agent.model.predict(
+                    current_state.to_numpy_array(include_batch_dim=True), verbose=0
+                )}"
+            )
 
         return self.agent.model
 
@@ -86,7 +106,7 @@ class AITrainer:
             pipe_velocity=get_curr_pipe_velocity(self.game_manager),
             distance_to_next_pipe=distance_to_next_pipe,
             next_pipe_top_height=next_pipe_top_height,
-            next_pipe_bot_height=next_pipe_bot_height
+            next_pipe_bot_height=next_pipe_bot_height,
         )
 
     def _create_knowledge(
