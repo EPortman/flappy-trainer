@@ -1,6 +1,13 @@
+import time
+
 from tensorflow.keras.models import Sequential
 
-from flappy_trainer.ai.ai_utils import Action
+from flappy_trainer.ai.ai_utils import (
+    Action,
+    get_curr_pipe_velocity,
+    get_distance_to_next_pipe,
+    get_nearest_pipe_heights,
+)
 from flappy_trainer.ai.environment_state import EnvironmentState
 from flappy_trainer.ai.knowledge import Knowledge
 from flappy_trainer.ai.reinforcement_learning_agent import ReinforcementLearningAgent
@@ -9,32 +16,53 @@ from flappy_trainer.utils import GameState
 
 
 class AITrainer:
+    """
+    Trainer for the Flappy Bird AI. Handles running episodes, managing game states,
+    and training the reinforcement learning agent.
+    """
     def __init__(self):
         self.game_manager = GameManager()
         self.agent = ReinforcementLearningAgent()
         self.episodes = 100
         self.batch_size = 32
+        self.replay_interval = 10  # Replay every 10 frames
+        self.frame_count = 0  # Count frames since last replay
 
-    def train(self) -> Sequential:
+    def train(self, debug=True) -> Sequential:
+        self.agent.create_model()
         for episode in range(self.episodes):
-            total_reward = 0
             self.game_manager.start_game()
+            total_reward = 0
 
             while self.game_manager.state is GameState.RUNNING:
+                self.frame_count += 1
+
+                # Update game state and draw the frame
                 current_state = self._get_current_state()
                 action = self.agent.choose_action(current_state)
                 self._apply_action(action)
-                reward = -1 if self.game_manager.state == GameState.GAME_OVER else 1
+                self.game_manager.update(1 / 60)
+                self.game_manager.draw()
 
+                if debug:
+                    time.sleep(1 / 60)
+
+                # Calculate reward and store knowledge
+                reward = -10 if self.game_manager.state == GameState.GAME_OVER else 1
                 knowledge = self._create_knowledge(current_state, action, reward)
                 self.agent.remember(knowledge)
                 total_reward += reward
 
-                if len(self.agent.memory) >= self.batch_size:
+                # Replay synchronously at intervals
+                if (
+                    self.frame_count % self.replay_interval == 0
+                    and len(self.agent.memory) >= self.batch_size
+                ):
                     self.agent.replay(self.batch_size)
-                if self.game_manager.state == GameState.GAME_OVER:
-                    break
-        print(f"Episode {episode+1}/{self.episodes}, Total Reward: {total_reward}")
+
+            print(f"Episode {episode + 1} / {self.episodes}, Total Reward: {total_reward}")
+
+        return self.agent.model
 
     def _apply_action(self, action: Action):
         if action == Action.FLAP:
@@ -44,20 +72,21 @@ class AITrainer:
         self.game_manager.update(delta_time)
 
     def _get_current_state(self) -> EnvironmentState:
-        distance_to_next_pipe = self._get_distance_to_next_pipe()
-        nearest_pipe_heights = self._get_nearest_pipe_heights()
+        distance_to_next_pipe = get_distance_to_next_pipe(self.game_manager)
+        nearest_pipe_heights = get_nearest_pipe_heights(self.game_manager)
         if nearest_pipe_heights:
             next_pipe_top_height, next_pipe_bot_height = nearest_pipe_heights
         else:
             next_pipe_top_height, next_pipe_bot_height = None, None
 
         return EnvironmentState(
+            bird_is_alive=self.game_manager.state == GameState.RUNNING,
             bird_vert_pos=self.game_manager.bird.y_pos,
             bird_vert_velocity=self.game_manager.bird.y_velocity,
+            pipe_velocity=get_curr_pipe_velocity(self.game_manager),
             distance_to_next_pipe=distance_to_next_pipe,
             next_pipe_top_height=next_pipe_top_height,
-            next_pipe_bot_height=next_pipe_bot_height,
-            pipe_velocity=self._get_curr_pipe_velocity(),
+            next_pipe_bot_height=next_pipe_bot_height
         )
 
     def _create_knowledge(
