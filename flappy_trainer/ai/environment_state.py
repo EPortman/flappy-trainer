@@ -9,18 +9,23 @@ class EnvironmentState:
         bird_is_alive: bool,
         bird_vert_pos: int,
         bird_vert_velocity: int,
-        distance_to_next_pipe: int,
-        next_pipe_top_height: int,
-        next_pipe_bot_height: int,
         pipe_velocity: int,
+        distance_to_next_pipe: int | None = None,
+        next_pipe_top_height: int | None = None,
+        next_pipe_bot_height: int | None = None,
     ):
+        """
+        Initializes the environment state. If pipe-related values are None,
+        defaults are set to ensure meaningful training data.
+        """
         self.bird_is_alive = bird_is_alive
         self.bird_vert_pos = bird_vert_pos
         self.bird_vert_velocity = bird_vert_velocity
-        self.distance_to_next_pipe = distance_to_next_pipe
-        self.next_pipe_top_height = next_pipe_top_height
-        self.next_pipe_bot_height = next_pipe_bot_height
         self.pipe_velocity = pipe_velocity
+        # Default values when None
+        self.distance_to_next_pipe = distance_to_next_pipe or SCREEN_WIDTH
+        self.next_pipe_top_height = next_pipe_top_height or SCREEN_HEIGHT // 2
+        self.next_pipe_bot_height = next_pipe_bot_height or SCREEN_HEIGHT // 2
 
     def to_numpy_array(self, include_batch_dim: bool = False) -> np.array:
         """
@@ -33,9 +38,9 @@ class EnvironmentState:
         Returns:
             np.array: Normalized feature array representing the current environment state.
         """
+        pipe_gap_size = self.next_pipe_bot_height - self.next_pipe_top_height
         relative_pos_to_top = self.bird_vert_pos - self.next_pipe_top_height
         relative_pos_to_bottom = self.bird_vert_pos - self.next_pipe_bot_height
-        pipe_gap_size = self.next_pipe_bot_height - self.next_pipe_top_height
         time_until_collision = (
             self.distance_to_next_pipe / self.pipe_velocity if self.pipe_velocity > 0 else 1
         )
