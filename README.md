@@ -9,11 +9,17 @@ poetry run isort .
 Run the ai trainer from the root directory
 
 ```
-python -m flappy_trainer.ai.ai_trainer
+python -m flappy_trainer.ai.main
 ```
 
 Run the game from the root directory
 
 ```
 python -m flappy_trainer.main
+```
+
+Run the tests from the root directory
+
+```
+pytest -v
 ```
