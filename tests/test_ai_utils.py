@@ -3,7 +3,6 @@ import pygame
 from flappy_trainer.ai.ai_utils import get_distance_to_next_pipe
 from flappy_trainer.config import SCREEN_WIDTH
 from flappy_trainer.game_managers.game_manager import GameManager
-from flappy_trainer.game_objects.pipe.pipe import Pipe
 from flappy_trainer.utils import PipeColor
 
 
