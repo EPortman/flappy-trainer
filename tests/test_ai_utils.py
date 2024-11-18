@@ -25,22 +25,22 @@ class TestGetDistanceToNextPipe:
 
     def test_one_pipe(self):
         """Test function calculates the distance to a single pipe correctly."""
-        self.game_manager.pipes.append(Pipe(PipeColor.GREEN, x_pos=400))
+        self.game_manager._spawn_pipe(pipe_color=PipeColor.GREEN, x_pos=400)
         calc_distance_to_next_pipe = get_distance_to_next_pipe(self.game_manager)
         actual_distance_to_next_pipe = 400 - self.game_manager.bird.x_pos
         assert calc_distance_to_next_pipe == actual_distance_to_next_pipe
 
     def test_multiple_pipes(self):
         """Test function calculates the distance to the nearest pipe when multiple pipes exist."""
-        self.game_manager.pipes.append(Pipe(PipeColor.GREEN, x_pos=400))
-        self.game_manager.pipes.append(Pipe(PipeColor.GREEN, x_pos=600))
+        self.game_manager._spawn_pipe(pipe_color=PipeColor.GREEN, x_pos=400)
+        self.game_manager._spawn_pipe(pipe_color=PipeColor.GREEN, x_pos=600)
         calc_distance_to_next_pipe = get_distance_to_next_pipe(self.game_manager)
         actual_distance_to_next_pipe = 400 - self.game_manager.bird.x_pos
         assert calc_distance_to_next_pipe == actual_distance_to_next_pipe
 
     def test_pipes_passed(self):
         """Test function ignores pipes that are already passed."""
-        self.game_manager.pipes.append(Pipe(PipeColor.GREEN, x_pos=10))
+        self.game_manager._spawn_pipe(pipe_color=PipeColor.GREEN, x_pos=10)
         self.game_manager.pipes[0].passed = True
         calc_distance_to_next_pipe = get_distance_to_next_pipe(self.game_manager)
         assert calc_distance_to_next_pipe == SCREEN_WIDTH
