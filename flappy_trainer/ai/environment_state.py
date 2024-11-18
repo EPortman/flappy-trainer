@@ -10,9 +10,9 @@ class EnvironmentState:
         bird_vert_pos: int,
         bird_vert_velocity: int,
         pipe_velocity: int,
-        distance_to_next_pipe: int | None = None,
-        next_pipe_top_height: int | None = None,
-        next_pipe_bot_height: int | None = None,
+        next_pipe_distance: int | None = None,
+        next_pipe_gap_pos: int | None = None,
+        next_pipe_gap_height: int | None = None,
     ):
         """
         Initializes the environment state. If pipe-related values are None,
@@ -22,12 +22,15 @@ class EnvironmentState:
         self.bird_vert_pos = bird_vert_pos
         self.bird_vert_velocity = bird_vert_velocity
         self.pipe_velocity = pipe_velocity
-        # Default values when None
-        self.distance_to_next_pipe = distance_to_next_pipe or SCREEN_WIDTH
-        self.next_pipe_top_height = next_pipe_top_height or SCREEN_HEIGHT // 2
-        self.next_pipe_bot_height = next_pipe_bot_height or SCREEN_HEIGHT // 2
+        self.next_pipe_distance = SCREEN_WIDTH if next_pipe_distance is None else next_pipe_distance
+        self.next_pipe_gap_pos = (
+            SCREEN_HEIGHT // 2 if next_pipe_gap_pos is None else next_pipe_gap_pos
+        )
+        self.next_pipe_gap_height = (
+            SCREEN_HEIGHT // 4 if next_pipe_gap_height is None else next_pipe_gap_height
+        )
 
-    def to_numpy_array(self, include_batch_dim: bool = False) -> np.array:
+    def to_numpy_array(self, include_batch_dim: bool = False) -> np.ndarray:
         """
         Converts the current state to a normalized numpy array for TensorFlow compatibility.
 
@@ -38,24 +41,14 @@ class EnvironmentState:
         Returns:
             np.array: Normalized feature array representing the current environment state.
         """
-        pipe_gap_size = self.next_pipe_bot_height - self.next_pipe_top_height
-        relative_pos_to_top = self.bird_vert_pos - self.next_pipe_top_height
-        relative_pos_to_bottom = self.bird_vert_pos - self.next_pipe_bot_height
-        time_until_collision = (
-            self.distance_to_next_pipe / self.pipe_velocity if self.pipe_velocity > 0 else 1
-        )
-
         data = np.array(
             [
-                1 if self.bird_is_alive else 0,
                 self.bird_vert_pos / SCREEN_HEIGHT,
                 self.bird_vert_velocity / MAX_BIRD_VELOCITY,
                 self.pipe_velocity / MAX_PIPE_VELOCITY,
-                self.distance_to_next_pipe / SCREEN_WIDTH,
-                relative_pos_to_top / SCREEN_HEIGHT,
-                relative_pos_to_bottom / SCREEN_HEIGHT,
-                pipe_gap_size / SCREEN_HEIGHT,
-                time_until_collision / SCREEN_WIDTH,
+                self.next_pipe_distance / SCREEN_WIDTH,
+                self.next_pipe_gap_pos / SCREEN_HEIGHT,
+                self.next_pipe_gap_height / SCREEN_HEIGHT,
             ],
             dtype=np.float32,  # Ensure compatibility with tensorflow operations
         )
@@ -66,13 +59,4 @@ class EnvironmentState:
     @classmethod
     def get_num_features(cls) -> int:
         """Retrieves the number of features used in the environment state representation."""
-        dummy_instance = cls(
-            bird_is_alive=True,
-            bird_vert_pos=SCREEN_HEIGHT // 2,
-            bird_vert_velocity=MAX_BIRD_VELOCITY // 2,
-            distance_to_next_pipe=SCREEN_WIDTH // 2,
-            next_pipe_top_height=SCREEN_HEIGHT // 3,
-            next_pipe_bot_height=(SCREEN_HEIGHT * 2) // 3,
-            pipe_velocity=MAX_PIPE_VELOCITY // 2,
-        )
-        return len(dummy_instance.to_numpy_array())
+        return 6
