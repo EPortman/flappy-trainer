@@ -51,13 +51,10 @@ class Bird(BaseBird):
         current_image = self.sprite_sheet.get_frame(self.current_frame)
         screen.blit(current_image, (self.x_pos, self.y_pos))
 
-        # Draw the collision radius as a circle (debugging)
+        # Draw the collision rectangle
         if DEBUG:
-            bird_center = (
-                self.x_pos + current_image.get_width() // 2,
-                self.y_pos + current_image.get_height() // 2,
-            )
-            pygame.draw.circle(screen, (255, 0, 0), bird_center, self.radius, 3)
+            hit_rect = self.get_rect()
+            pygame.draw.rect(screen, (255, 0, 0), hit_rect, 2)
 
     def reset(self):
         """Reset the bird's position, velocity, and state for a new game."""

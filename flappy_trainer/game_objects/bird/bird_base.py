@@ -46,7 +46,12 @@ class BaseBird(ABC):
     def get_rect(self) -> pygame.Rect:
         """Get the rectangle representing the bird for collision detection."""
         current_frame_image = self.sprite_sheet.get_frame(self.current_frame)
-        return current_frame_image.get_rect(topleft=(self.x_pos, self.y_pos))
+        mask = pygame.mask.from_surface(current_frame_image)
+        bounding_rects = mask.get_bounding_rects()
+        bounding_rect = bounding_rects[0]
+        bounding_rect.x += self.x_pos
+        bounding_rect.y += self.y_pos
+        return bounding_rect
 
     @abstractmethod
     def update(self, delta_time: float) -> None:
