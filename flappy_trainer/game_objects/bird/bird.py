@@ -1,5 +1,5 @@
 """
-Bird Class
+Bird
 
 This class represents the playable bird in the Flappy Bird game. It extends the `BaseBird`
 abstract class to implement specific gameplay mechanics such as movement, animations,
