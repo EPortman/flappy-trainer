@@ -16,6 +16,7 @@ from abc import ABC, abstractmethod
 import pygame
 
 from flappy_trainer.config import (
+    BIRD_ANIMATION_TIME,
     BIRD_COLOR,
     BIRD_FLAP_DECAY_FORCE,
     BIRD_FLAP_FORCE,
@@ -86,7 +87,7 @@ class BaseBird(ABC):
         self.previous_state = BirdState.NONE
         self.animation_state = BirdState.IDLE
         self.current_frame = BirdFrame.FLAPPING_TOP
-        self.animation_time = 0.05  # Time between frames in seconds
+        self.animation_time = BIRD_ANIMATION_TIME  # Time between frames in seconds
         self.time_since_animation_change = 0
 
     def _update_animation_frame(self) -> None:
