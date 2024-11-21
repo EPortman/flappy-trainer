@@ -49,18 +49,25 @@ class TestPipe:
 
     def test_pipe_init_with_incorrect(self):
         """Test pipe initialization with incorrect parameters."""
-        Pipe._assert_correct_parameters(PipeColor.GREEN, 100, 300, 150)
+        Pipe(PipeColor.GREEN, 100, 300, 150)
+
         # Invalid gap height
-        with pytest.raises(AssertionError, match="Gap height must be between"):
-            Pipe._assert_correct_parameters(PipeColor.RED, 100, 300, PIPE_MAX_GAP_HEIGHT + 1)
+        with pytest.raises(AssertionError, match="Gap height must be"):
+            Pipe(PipeColor.RED, 100, 300, PIPE_MAX_GAP_HEIGHT + 1)
 
         # Invalid gap center
-        with pytest.raises(AssertionError, match="Gap center must be between"):
-            Pipe._assert_correct_parameters(PipeColor.GREEN, 100, PIPE_MIN_HEIGHT, 150)
+        with pytest.raises(AssertionError, match="Gap center must be"):
+            Pipe(PipeColor.GREEN, 100, PIPE_MIN_HEIGHT, 150)
 
         # Invalid pipe color
-        with pytest.raises(AssertionError, match="Pipe color must be either green or red"):
-            Pipe._assert_correct_parameters("BLUE", 100, 300, 150)
+        with pytest.raises(AssertionError, match="Invalid pipe color."):
+            Pipe("BLUE", 100, 300, 150)
+
+        # Invalid x position
+        with pytest.raises(AssertionError, match="Invalid x pos."):
+            Pipe(PipeColor.GREEN, -1, 300, 150)
+        with pytest.raises(AssertionError, match="Invalid x pos."):
+            Pipe(PipeColor.GREEN, SCREEN_WIDTH + 1, 300, 150)
 
     def test_update_position(self):
         """Tests if the pipe correctly moves as the game manager updates the game."""
