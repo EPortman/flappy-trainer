@@ -21,7 +21,6 @@ from flappy_trainer.config import (
     BACKGROUND_COLOR,
     BORDER_COLOR,
     BORDER_THICKNESS,
-    INITIAL_PIPE_SPEED,
     PIPE_SPEED_INCREASE_PER_LEVEL_UP,
     SCORE_PER_LEVEL_UP,
     SCREEN_HEIGHT,
@@ -40,7 +39,6 @@ class BaseGameManager(ABC):
         pygame.display.set_caption("Flappy Trainer")
 
         # Game Parameters
-        self.pipe_speed = INITIAL_PIPE_SPEED
         self.score_per_level_up = SCORE_PER_LEVEL_UP
         self.pipe_speed_increase_per_level_up = PIPE_SPEED_INCREASE_PER_LEVEL_UP
 
@@ -74,6 +72,10 @@ class BaseGameManager(ABC):
                 BORDER_THICKNESS,
             ),
         )
+
+    def reset(self):
+        self.pipe_timer = 0
+        self.time_since_last_pipe = 0
 
     @abstractmethod
     def start_game(self):
