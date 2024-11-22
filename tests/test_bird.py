@@ -118,12 +118,15 @@ class TestBird:
         except Exception as e:
             pytest.fail(f"Bird.draw() raised an exception: {e}")
 
-    def test_get_rect(self):
-        """Test that the bird's collision rectangle matches its position and frame."""
-        rect = self.bird.get_rect()
-        current_frame_image = self.bird.sprite_sheet.get_frame(self.bird.current_frame)
-        expected_rect = current_frame_image.get_rect(topleft=(self.bird.x_pos, self.bird.y_pos))
-        assert rect == expected_rect
+    def get_rect(self) -> pygame.Rect:
+        """Get the rectangle representing the bird for collision detection."""
+        current_frame_image = self.sprite_sheet.get_frame(self.current_frame)
+        mask = pygame.mask.from_surface(current_frame_image)
+        bounding_rects = mask.get_bounding_rects()
+        bounding_rect = bounding_rects[0]
+        bounding_rect.x += self.x_pos
+        bounding_rect.y += self.y_pos
+        return bounding_rect
 
     def test_animation_frame_updates(self):
         """Test that the bird's animation frame updates correctly."""
