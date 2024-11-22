@@ -118,6 +118,7 @@ class TestBird:
         except Exception as e:
             pytest.fail(f"Bird.draw() raised an exception: {e}")
 
+    # TO_DO: Fix this
     def get_rect(self) -> pygame.Rect:
         """Get the rectangle representing the bird for collision detection."""
         current_frame_image = self.sprite_sheet.get_frame(self.current_frame)

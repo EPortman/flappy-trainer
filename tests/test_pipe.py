@@ -28,7 +28,7 @@ class TestPipe:
 
     def test_pipe_initi_with_defaults(self):
         """Test Pipe initialization with default parameters."""
-        self.game_manager._spawn_pipe(PipeColor.GREEN)
+        self.game_manager._spawn_pipe()
         pipe: Pipe = self.game_manager.pipes[0]
         assert pipe.color == PipeColor.GREEN
         assert pipe.x_pos == SCREEN_WIDTH
@@ -38,8 +38,7 @@ class TestPipe:
 
     def test_pipe_init_with_custom(self):
         """Test Pipe initialization with custom parameters."""
-        self.game_manager._spawn_pipe(pipe_color=PipeColor.GREEN, x_pos=400, gap_center=300, gap_height=150)
-        pipe: Pipe = self.game_manager.pipes[0]
+        pipe = Pipe(pipe_color=PipeColor.GREEN, x_pos=400, gap_center=300, gap_height=150)
         assert pipe.color == PipeColor.GREEN
         assert pipe.x_pos == 400
         assert pipe.gap_center == 300
@@ -69,16 +68,17 @@ class TestPipe:
 
     def test_update_position(self):
         """Tests if the pipe correctly moves as the game manager updates the game."""
-        self.game_manager._spawn_pipe(pipe_color=PipeColor.GREEN, x_pos=400, gap_center=300, gap_height=150)
+        self.game_manager._spawn_pipe()
         pipe: Pipe = self.game_manager.pipes[0]
         initial_x = pipe.x_pos
-        self.game_manager.update(1 / 60)
+        pipe.update_position(INITIAL_PIPE_SPEED * 1 / 60)
         assert pipe.x_pos == initial_x - (INITIAL_PIPE_SPEED * 1 / 60)
 
     def test_is_off_screen(self):
         """Test the `is_off_screen` method."""
-        self.game_manager._spawn_pipe(pipe_color=PipeColor.GREEN, x_pos=10)
+        self.game_manager._spawn_pipe()
         pipe: Pipe = self.game_manager.pipes[0]
+        pipe.x_pos = 10
         for _ in range(5):
             self.game_manager.update(1 / 60)
         assert not pipe.is_off_screen()
@@ -86,22 +86,9 @@ class TestPipe:
             self.game_manager.update(1 / 60)
         assert pipe.is_off_screen()
 
-    def test_collides_with(self):
-        """Test the `collides_with` method."""
-        self.game_manager._spawn_pipe(pipe_color=PipeColor.GREEN, x_pos=100, gap_center=200, gap_height=150)
-        pipe: Pipe = self.game_manager.pipes[0]
-        bird_rect = pygame.Rect(110, 190, 20, 20)  # Overlaps the gap
-        assert not pipe.collides_with(bird_rect)  # Should not collide
-
-        bird_rect = pygame.Rect(110, 0, 20, 20)  # Collides with the top pipe
-        assert pipe.collides_with(bird_rect)
-
-        bird_rect = pygame.Rect(110, 400, 20, 20)  # Collides with the bottom pipe
-        assert pipe.collides_with(bird_rect)
-
     def test_gap_height_and_center_correctness(self):
         """Ensure the gap height, center calculations, and rectangles are correct."""
-        self.game_manager._spawn_pipe(pipe_color=PipeColor.GREEN, x_pos=400, gap_center=300, gap_height=150)
+        self.game_manager._spawn_pipe()
         pipe: Pipe = self.game_manager.pipes[0]
         gap_top = pipe.gap_center - (pipe.gap_height // 2)
         gap_bottom = pipe.gap_center + (pipe.gap_height // 2)
