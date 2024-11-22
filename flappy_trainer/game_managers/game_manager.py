@@ -24,6 +24,7 @@ from flappy_trainer.config import (
     SCREEN_HEIGHT,
     START_LEVEL,
     START_SCORE,
+    PIPE_DEFAULT_GAP_HEIGHT
 )
 from flappy_trainer.game_managers.base_game_manager import BaseGameManager
 from flappy_trainer.game_objects.bird.bird import Bird
@@ -39,6 +40,11 @@ class GameManager(BaseGameManager):
         self.bird = None
         self.pipes = []
         self.time_between_pipes = randint(MIN_TIME_BETWEEN_PIPES, MAX_TIME_BETWEEN_PIPES)
+        self.pipes_active = True
+        self.pipe_gaps_consistent = False
+        self.pipe_gaps_centered = False
+        self.pipe_gap_height = None
+        self.gap_height = PIPE_DEFAULT_GAP_HEIGHT
 
     def start_game(self):
         """Reset and initialize game objects to start the game."""
@@ -71,7 +77,8 @@ class GameManager(BaseGameManager):
 
         self.bird.update(delta_time)
         self._check_bird_collision()
-        self._update_pipes(delta_time)
+        if self.pipes_active:
+            self._update_pipes(delta_time)
 
         if self.score >= self.next_level_score:
             self._level_up()
@@ -105,9 +112,17 @@ class GameManager(BaseGameManager):
         # Spawn new pipes based on elapsed time
         self.time_since_last_pipe += delta_time * 1000
         if self.time_since_last_pipe >= self.time_between_pipes:
-            self._spawn_pipe(PipeColor.GREEN)
+            if self.pipe_gaps_consistent and self.pipe_gaps_centered:
+                self._spawn_pipe(PipeColor.GREEN, gap_center=SCREEN_HEIGHT, gap_height=PIPE_DEFAULT_GAP_HEIGHT)
+            elif self.pipe_gaps_consistent:
+                self._spawn_pipe(PipeColor.GREEN)
+            elif self.pipe_gaps_centered:
+                self._spawn_pipe(PipeColor.GREEN, gap_center=SCREEN_HEIGHT, gap_height=PIPE_DEFAULT_GAP_HEIGHT)
+                self.time_between_pipes = randint(MIN_TIME_BETWEEN_PIPES, MAX_TIME_BETWEEN_PIPES)
+            else:
+                self._spawn_pipe(PipeColor.GREEN)
+                self.time_between_pipes = randint(MIN_TIME_BETWEEN_PIPES, MAX_TIME_BETWEEN_PIPES)
             self.time_since_last_pipe = 0
-            self.time_between_pipes = randint(MIN_TIME_BETWEEN_PIPES, MAX_TIME_BETWEEN_PIPES)
 
     def _check_bird_collision(self):
         """Check for collisions between the bird and obstacles."""
