@@ -32,13 +32,9 @@ class BirdSpriteSheet:
         """Retrieve a specific frame from the loaded frames."""
         if 0 <= frame.value < len(self.frames):
             return self.frames[frame.value]
-        raise ValueError(
-            f"Invalid frame index: {frame.value}. Available frames: 0 to {len(self.frames) - 1}."
-        )
+        raise ValueError(f"Invalid frame index: {frame.value}. Available frames: 0 to {len(self.frames) - 1}.")
 
-    def get_next_frame(
-        self, current_frame: BirdFrame, start_frame: BirdFrame, end_frame: BirdFrame
-    ) -> BirdFrame:
+    def get_next_frame(self, current_frame: BirdFrame, start_frame: BirdFrame, end_frame: BirdFrame) -> BirdFrame:
         """Get the next frame in the animation cycle, wrapping to the start frame if needed."""
         next_value = current_frame.value + 1
 
@@ -58,10 +54,7 @@ class BirdSpriteSheet:
 
     def _extract_frame(self, index: int) -> pygame.Surface:
         """Extract an individual frame from the sprite sheet."""
-        x = (
-            index * (BIRD_SPRITE_SHEET_FRAME_HEIGHT + BIRD_SPRITE_SHEET_PADDING_X)
-            + BIRD_SPRITE_SHEET_PADDING_X
-        )
+        x = index * (BIRD_SPRITE_SHEET_FRAME_HEIGHT + BIRD_SPRITE_SHEET_PADDING_X) + BIRD_SPRITE_SHEET_PADDING_X
         frame_rect = pygame.Rect(
             x,
             BIRD_SPRITE_SHEET_START_Y,

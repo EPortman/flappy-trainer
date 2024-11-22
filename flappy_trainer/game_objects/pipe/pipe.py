@@ -30,11 +30,7 @@ from flappy_trainer.utils import PipeColor
 class Pipe(PipeBase):
     def __init__(self, pipe_color: PipeColor, x_pos=None, gap_center=None, gap_height=None):
         self._assert_correct_parameters(pipe_color, x_pos, gap_center, gap_height)
-        height_of_gap = (
-            gap_height
-            if gap_height is not None
-            else randint(PIPE_MIN_GAP_HEIGHT, PIPE_MAX_GAP_HEIGHT)
-        )
+        height_of_gap = gap_height if gap_height is not None else randint(PIPE_MIN_GAP_HEIGHT, PIPE_MAX_GAP_HEIGHT)
         location_of_gap = (
             gap_center
             if gap_center is not None
@@ -49,9 +45,7 @@ class Pipe(PipeBase):
 
     def collides_with(self, bird_rect: pygame.Rect) -> bool:
         """Check if the pipe collides with the bird's rectangle."""
-        return bird_rect.colliderect(self.top_pipe_rect) or bird_rect.colliderect(
-            self.bot_pipe_rect
-        )
+        return bird_rect.colliderect(self.top_pipe_rect) or bird_rect.colliderect(self.bot_pipe_rect)
 
     def is_off_screen(self) -> bool:
         """Check if the pipe has moved off the left side of the screen."""
@@ -68,9 +62,7 @@ class Pipe(PipeBase):
         self.draw_pipe(screen, is_top=False)
 
     @staticmethod
-    def _assert_correct_parameters(
-        pipe_color: PipeColor, x_pos: int, gap_center: int, gap_height: int
-    ):
+    def _assert_correct_parameters(pipe_color: PipeColor, x_pos: int, gap_center: int, gap_height: int):
         """Validate the pipe parameters."""
         if not isinstance(pipe_color, PipeColor):
             raise AssertionError("Invalid pipe color. Must be PipeColor.RED or PipeColor.GREEN.")

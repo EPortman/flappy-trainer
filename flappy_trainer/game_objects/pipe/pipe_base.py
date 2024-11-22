@@ -86,9 +86,7 @@ class PipeBase(ABC):
         gap_top_y = self.gap_center - (self.gap_height // 2)
         gap_bottom_y = self.gap_center + (self.gap_height // 2)
         pygame.draw.circle(screen, (0, 255, 0), (gap_center_x, self.gap_center), 5)
-        pygame.draw.line(
-            screen, (0, 255, 0), (gap_center_x, gap_top_y), (gap_center_x, gap_bottom_y), 2
-        )
+        pygame.draw.line(screen, (0, 255, 0), (gap_center_x, gap_top_y), (gap_center_x, gap_bottom_y), 2)
 
     def _generate_pipe_heights(self) -> tuple[int, int]:
         """Generate px heights for the pipes using screen height and gap location."""

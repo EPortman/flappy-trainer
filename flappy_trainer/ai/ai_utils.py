@@ -1,6 +1,14 @@
 from enum import Enum
 
+from flappy_trainer.config import (
+    INITIAL_PIPE_SPEED,
+    PIPE_SPEED_INCREASE_PER_LEVEL_UP,
+    PIPE_WIDTH,
+    SCREEN_HEIGHT,
+    SCREEN_WIDTH,
+)
 from flappy_trainer.game_managers.game_manager import GameManager
+from flappy_trainer.game_objects.pipe.pipe import Pipe
 from flappy_trainer.utils import get_env_var_as_int
 
 
@@ -9,29 +17,27 @@ class Action(Enum):
     NO_FLAP = 0
 
 
-def get_distance_to_next_pipe(game_manager: GameManager) -> int | None:
-    unpassed_pipes = [pipe for pipe in game_manager.pipes if pipe.passed is False]
-    if not unpassed_pipes:
-        return None
-    closest_pipe = min(unpassed_pipes, key=lambda pipe: pipe.x_pos)
-    distance_to_pipe = closest_pipe.x_pos - game_manager.bird.x_pos
-    return distance_to_pipe
-
-
-def get_nearest_pipe_heights(game_manager: GameManager) -> tuple[int, int] | None:
-    unpassed_pipes = [pipe for pipe in game_manager.pipes if pipe.passed is False]
-    if not unpassed_pipes:
-        return None
-    closest_pipe = min(unpassed_pipes, key=lambda pipe: pipe.x_pos)
-    return (closest_pipe.top_height, closest_pipe.bottom_height)
-
-
 def get_curr_pipe_velocity(game_manager: GameManager) -> int:
-    pipe_base_speed = get_env_var_as_int("PIPE_SPEED")
-    pipe_speed_increase_per_level_up = get_env_var_as_int("PIPE_SPEED_INCREASE_PER_LEVEL_UP")
-    delta_time = 1 / 60
+    return INITIAL_PIPE_SPEED + (game_manager.level * PIPE_SPEED_INCREASE_PER_LEVEL_UP)
 
-    curr_pipe_velocity = (
-        pipe_base_speed + (game_manager.level * pipe_speed_increase_per_level_up) * delta_time
-    )
-    return curr_pipe_velocity
+
+def get_nearest_pipe_details(game_manager: GameManager) -> tuple[int, int, int]:
+    unpassed_pipes = [pipe for pipe in game_manager.pipes if pipe.passed is False]
+    if not unpassed_pipes:
+        next_pipe_distance = SCREEN_WIDTH
+        next_pipe_gap_pos = SCREEN_HEIGHT // 2
+        next_pipe_gap_height = SCREEN_HEIGHT // 4
+    else:
+        pipe: Pipe = min(unpassed_pipes, key=lambda pipe: pipe.x_pos)
+        next_pipe_distance = (pipe.x_pos + PIPE_WIDTH) - game_manager.bird.x_pos
+        next_pipe_gap_pos = pipe.gap_center
+        next_pipe_gap_height = pipe.gap_height
+    return (next_pipe_distance, next_pipe_gap_pos, next_pipe_gap_height)
+
+
+def get_alignment_reward(state):
+    pipe_center = (state.next_pipe_top_height + state.next_pipe_bot_height) / 2
+    distance_to_center = abs(state.bird_vert_pos - pipe_center)
+    max_distance = get_env_var_as_int("SCREEN_HEIGHT")
+    alignment_reward = 1 - (distance_to_center / max_distance)
+    reward += alignment_reward * 10

@@ -23,12 +23,8 @@ class EnvironmentState:
         self.bird_vert_velocity = bird_vert_velocity
         self.pipe_velocity = pipe_velocity
         self.next_pipe_distance = SCREEN_WIDTH if next_pipe_distance is None else next_pipe_distance
-        self.next_pipe_gap_pos = (
-            SCREEN_HEIGHT // 2 if next_pipe_gap_pos is None else next_pipe_gap_pos
-        )
-        self.next_pipe_gap_height = (
-            SCREEN_HEIGHT // 4 if next_pipe_gap_height is None else next_pipe_gap_height
-        )
+        self.next_pipe_gap_pos = SCREEN_HEIGHT // 2 if next_pipe_gap_pos is None else next_pipe_gap_pos
+        self.next_pipe_gap_height = SCREEN_HEIGHT // 4 if next_pipe_gap_height is None else next_pipe_gap_height
 
     def to_numpy_array(self, include_batch_dim: bool = False) -> np.ndarray:
         """

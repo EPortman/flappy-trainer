@@ -2,12 +2,7 @@ import time
 
 from tensorflow.keras.models import Sequential
 
-from flappy_trainer.ai.ai_utils import (
-    Action,
-    get_curr_pipe_velocity,
-    get_distance_to_next_pipe,
-    get_nearest_pipe_heights,
-)
+from flappy_trainer.ai.ai_utils import Action, get_alignment_reward, get_curr_pipe_velocity, get_nearest_pipe_details
 from flappy_trainer.ai.environment_state import EnvironmentState
 from flappy_trainer.ai.knowledge import Knowledge
 from flappy_trainer.ai.reinforcement_learning_agent import ReinforcementLearningAgent
@@ -26,10 +21,11 @@ class AITrainer:
         self.agent = ReinforcementLearningAgent()
         self.episodes = 10000
         self.batch_size = 32
-        self.replay_interval = 10  # Replay every 10 frames
-        self.frame_count = 0  # Count frames since last replay
+        self.decision_interval = 20
+        self.replay_interval = self.decision_interval * 3
+        self.frame_count = 0
 
-    def train(self, debug=True, decision_interval=10) -> Sequential:
+    def train(self, debug=True) -> Sequential:
         """
         Train the agent by running episodes of the game.
 
@@ -39,50 +35,51 @@ class AITrainer:
         Returns:
             Sequential: The trained model.
         """
-        self.agent.create_model()
         for episode in range(self.episodes):
             self.game_manager.start_game()
             total_reward = 0
 
             while self.game_manager.state is GameState.RUNNING:
+                # Update the game (60 fps)
+                self.game_manager.update(1 / 60)
+                self.game_manager.draw_canvas()
                 self.frame_count += 1
-                action = Action.NO_FLAP
-                # Update game state and draw the frame
-                current_state = self._get_current_state()
+                total_reward += 1
 
-                # Make a decision only at specified intervals
-                if self.frame_count % decision_interval == 0:
+                # Choose action and calculate reward from action
+                if self.frame_count % self.decision_interval == 0:
+                    current_state = self._get_current_state()
                     action = self.agent.choose_action(current_state)
                     self._apply_action(action)
-
-                # Update the game state regardless of decision interval
-                self.game_manager.update(1 / 60)
-                self.game_manager.draw()
+                    reward, knowledge = self._calculate_reward(current_state, action)
+                    if knowledge:
+                        self.agent.remember(knowledge)
+                    total_reward += reward
 
                 if debug:
                     time.sleep(1 / 60)
 
-                # Calculate reward and store knowledge
-                reward = -100 if self.game_manager.state == GameState.GAME_OVER else 1
-                knowledge = self._create_knowledge(current_state, action, reward)
-                self.agent.remember(knowledge)
-                total_reward += reward
-
                 # Replay synchronously at intervals
-                if (
-                    self.frame_count % self.replay_interval == 0
-                    and len(self.agent.memory) >= self.batch_size
-                ):
+                if self.frame_count % self.replay_interval == 0:
                     self.agent.replay(self.batch_size)
 
             print(f"Episode {episode + 1} / {self.episodes}, Total Reward: {total_reward}")
             print(
-                f"Q-values: {self.agent.model.predict(
-                    current_state.to_numpy_array(include_batch_dim=True), verbose=0
-                )}"
+                f"Q-values: {self.agent.model.predict(current_state.to_numpy_array(include_batch_dim=True), verbose=0)}"
             )
-
         return self.agent.model
+
+    def _calculate_reward(self, current_state, action) -> tuple[float, Knowledge] | tuple[float, None]:
+        reward = -10 if self.game_manager.state == GameState.GAME_OVER else 0
+        if self.game_manager.state == GameState.RUNNING and current_state.next_pipe_top_height is not None:
+            pipe_center = (current_state.next_pipe_top_height + current_state.next_pipe_bot_height) / 2
+            distance_to_center = abs(current_state.bird_vert_pos - pipe_center)
+            max_distance = self.game_manager.SCREEN_HEIGHT  # Normalize by screen height
+            alignment_reward = 1 - (distance_to_center / max_distance)  # Reward inversely proportional to distance
+            reward += alignment_reward * 10  # Scale the reward for impact
+            knowledge = self._create_knowledge(current_state, action, reward)
+            return (reward, knowledge)
+        return (reward, None)
 
     def _apply_action(self, action: Action):
         if action == Action.FLAP:
@@ -92,26 +89,23 @@ class AITrainer:
         self.game_manager.update(delta_time)
 
     def _get_current_state(self) -> EnvironmentState:
-        distance_to_next_pipe = get_distance_to_next_pipe(self.game_manager)
-        nearest_pipe_heights = get_nearest_pipe_heights(self.game_manager)
-        if nearest_pipe_heights:
-            next_pipe_top_height, next_pipe_bot_height = nearest_pipe_heights
-        else:
-            next_pipe_top_height, next_pipe_bot_height = None, None
+        bird_is_alive = self.game_manager.state == GameState.RUNNING
+        bird_vert_pos = self.game_manager.bird.y_pos
+        bird_vert_velocity = self.game_manager.bird.y_velocity
+        pipe_velocity = get_curr_pipe_velocity(self.game_manager)
+        distance_to_next_pipe, next_pipe_gap_pos, next_pipe_gap_height = get_nearest_pipe_details(self.game_manager)
 
         return EnvironmentState(
-            bird_is_alive=self.game_manager.state == GameState.RUNNING,
-            bird_vert_pos=self.game_manager.bird.y_pos,
-            bird_vert_velocity=self.game_manager.bird.y_velocity,
-            pipe_velocity=get_curr_pipe_velocity(self.game_manager),
+            bird_is_alive=bird_is_alive,
+            bird_vert_pos=bird_vert_pos,
+            bird_vert_velocity=bird_vert_velocity,
+            pipe_velocity=pipe_velocity,
             distance_to_next_pipe=distance_to_next_pipe,
-            next_pipe_top_height=next_pipe_top_height,
-            next_pipe_bot_height=next_pipe_bot_height,
+            next_pipe_gap_pos=next_pipe_gap_pos,
+            next_pipe_gap_height=next_pipe_gap_height,
         )
 
-    def _create_knowledge(
-        self, prev_state: EnvironmentState, action: Action, reward: float
-    ) -> Knowledge:
+    def _create_knowledge(self, prev_state: EnvironmentState, action: Action, reward: float) -> Knowledge:
         post_state = self._get_current_state()
         knowledge = Knowledge(prev_state, action, reward, post_state)
         return knowledge

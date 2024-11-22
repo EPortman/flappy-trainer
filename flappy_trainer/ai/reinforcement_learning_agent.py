@@ -18,16 +18,16 @@ class ReinforcementLearningAgent:
     """
 
     def __init__(self):
-        self.model: Sequential = None
+        self.model: Sequential = self._create_model()
         self.memory: deque[Knowledge] = deque(maxlen=AGENT_MAX_MEMORY)
         self.exploration_rate = 1.0
         self.discount_factor = 0.8
         self.min_exploration_rate = 0.1
         self.exploration_decay = 0.995
 
-    def create_model(self):
+    def _create_model(self) -> Sequential:
         """Define and compile the neural network model."""
-        self.model = Sequential(
+        model = Sequential(
             [
                 Dense(128, input_dim=EnvironmentState.get_num_features(), activation="relu"),
                 BatchNormalization(),
@@ -39,7 +39,8 @@ class ReinforcementLearningAgent:
                 Dense(2, activation="linear"),  # Output Q-values for both actions
             ]
         )
-        self.model.compile(optimizer="adam", loss="mean_squared_error")
+        model.compile(optimizer="adam", loss="mean_squared_error")
+        return model
 
     def choose_action(self, state: EnvironmentState) -> Action:
         """Choose an action based on exploration vs exploitation."""
@@ -85,6 +86,4 @@ class ReinforcementLearningAgent:
         self.model.fit(np.array(states), np.array(targets), epochs=1, verbose=0)
 
         # Decay exploration rate
-        self.exploration_rate = max(
-            self.min_exploration_rate, self.exploration_rate * self.exploration_decay
-        )
+        self.exploration_rate = max(self.min_exploration_rate, self.exploration_rate * self.exploration_decay)

@@ -53,9 +53,7 @@ class PipeSpriteSheet:
 
     def _extract_frame(self, x_offset: int) -> pygame.Surface:
         """Extract a pipe frame from the sprite sheet given an x-coordinate offset."""
-        frame_rect = pygame.Rect(
-            x_offset, 0, PIPE_SPRITE_SHEET_FRAME_WIDTH, PIPE_SPRITE_SHEET_FRAME_HEIGHT
-        )
+        frame_rect = pygame.Rect(x_offset, 0, PIPE_SPRITE_SHEET_FRAME_WIDTH, PIPE_SPRITE_SHEET_FRAME_HEIGHT)
         return self.sprite_sheet.subsurface(frame_rect).copy()
 
     def _scale_frame(self, frame: pygame.Surface) -> pygame.Surface:
@@ -76,9 +74,7 @@ class PipeSpriteSheet:
             raise ValueError(f"Invalid pipe color specified: '{color}'. Must be 'red' or 'green'.")
 
     @staticmethod
-    def _flip_frame_if_needed(
-        frame: pygame.Surface, color: PipeColor, is_top: bool
-    ) -> pygame.Surface:
+    def _flip_frame_if_needed(frame: pygame.Surface, color: PipeColor, is_top: bool) -> pygame.Surface:
         """Flip the frame vertically if required based on the pipe's color and position."""
         if (color == PipeColor.RED and is_top) or (color == PipeColor.GREEN and not is_top):
             return pygame.transform.flip(frame, False, True)

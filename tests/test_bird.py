@@ -63,9 +63,7 @@ class TestBird:
         self.bird.y_velocity = -1.0
         initial_y = self.bird.y_pos
         delta_time = 0.1
-        expected_velocity = self.bird.y_velocity * self.bird.flap_decay + (
-            self.bird.gravity * delta_time
-        )
+        expected_velocity = self.bird.y_velocity * self.bird.flap_decay + (self.bird.gravity * delta_time)
         expected_y = initial_y + expected_velocity
         self.bird.update(delta_time)
         assert self.bird.y_pos == expected_y
