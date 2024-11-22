@@ -20,11 +20,12 @@ from flappy_trainer.config import (
     MAX_PIPE_VELOCITY,
     MAX_TIME_BETWEEN_PIPES,
     MIN_TIME_BETWEEN_PIPES,
+    PIPE_DEFAULT_GAP_HEIGHT,
+    PIPE_DEFAULT_Y_POS,
     PIPE_WIDTH,
     SCREEN_HEIGHT,
     START_LEVEL,
     START_SCORE,
-    PIPE_DEFAULT_GAP_HEIGHT
 )
 from flappy_trainer.game_managers.base_game_manager import BaseGameManager
 from flappy_trainer.game_objects.bird.bird import Bird
@@ -40,11 +41,12 @@ class GameManager(BaseGameManager):
         self.bird = None
         self.pipes = []
         self.time_between_pipes = randint(MIN_TIME_BETWEEN_PIPES, MAX_TIME_BETWEEN_PIPES)
-        self.pipes_active = True
-        self.pipe_gaps_consistent = False
-        self.pipe_gaps_centered = False
-        self.pipe_gap_height = None
-        self.gap_height = PIPE_DEFAULT_GAP_HEIGHT
+        self.is_pipes_active = True
+        self.is_pipe_spawns_consistent = False
+        self.is_pipe_gap_heights_consistent = False
+        self.is_pipe_gaps_centered = False
+        self.pipe_gap_height = PIPE_DEFAULT_GAP_HEIGHT
+        self.pipe_gap_y_pos = PIPE_DEFAULT_Y_POS
 
     def start_game(self):
         """Reset and initialize game objects to start the game."""
@@ -77,7 +79,7 @@ class GameManager(BaseGameManager):
 
         self.bird.update(delta_time)
         self._check_bird_collision()
-        if self.pipes_active:
+        if self.is_pipes_active:
             self._update_pipes(delta_time)
 
         if self.score >= self.next_level_score:
@@ -112,16 +114,7 @@ class GameManager(BaseGameManager):
         # Spawn new pipes based on elapsed time
         self.time_since_last_pipe += delta_time * 1000
         if self.time_since_last_pipe >= self.time_between_pipes:
-            if self.pipe_gaps_consistent and self.pipe_gaps_centered:
-                self._spawn_pipe(PipeColor.GREEN, gap_center=SCREEN_HEIGHT, gap_height=PIPE_DEFAULT_GAP_HEIGHT)
-            elif self.pipe_gaps_consistent:
-                self._spawn_pipe(PipeColor.GREEN)
-            elif self.pipe_gaps_centered:
-                self._spawn_pipe(PipeColor.GREEN, gap_center=SCREEN_HEIGHT, gap_height=PIPE_DEFAULT_GAP_HEIGHT)
-                self.time_between_pipes = randint(MIN_TIME_BETWEEN_PIPES, MAX_TIME_BETWEEN_PIPES)
-            else:
-                self._spawn_pipe(PipeColor.GREEN)
-                self.time_between_pipes = randint(MIN_TIME_BETWEEN_PIPES, MAX_TIME_BETWEEN_PIPES)
+            self._spawn_pipe()
             self.time_since_last_pipe = 0
 
     def _check_bird_collision(self):
@@ -156,7 +149,15 @@ class GameManager(BaseGameManager):
         self.screen.blit(score_text, (10, 10))
         self.screen.blit(level_text, (10, 50))
 
-    def _spawn_pipe(self, pipe_color: PipeColor, x_pos=None, gap_center=None, gap_height=None):
+    def _spawn_pipe(self):
         """Spawn a new pipe and add it to the list of pipes."""
-        pipe = Pipe(pipe_color, x_pos, gap_center, gap_height)
+        gap_height = self.pipe_gap_height if self.is_pipe_gap_heights_consistent else None
+        gap_center = (
+            SCREEN_HEIGHT // 2
+            if self.is_pipe_gaps_centered
+            else self.pipe_gap_y_pos if self.is_pipe_gap_heights_consistent else None
+        )
+        pipe = Pipe(PipeColor.GREEN, gap_center=gap_center, gap_height=gap_height)
+        if not self.is_pipe_spawns_consistent:
+            self.time_between_pipes = randint(MIN_TIME_BETWEEN_PIPES, MAX_TIME_BETWEEN_PIPES)
         self.pipes.append(pipe)
