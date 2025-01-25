@@ -8,6 +8,7 @@ from flappy_trainer.ai.knowledge import Knowledge
 from flappy_trainer.ai.reinforcement_learning_agent import ReinforcementLearningAgent
 from flappy_trainer.game_managers.game_manager import GameManager
 from flappy_trainer.utils import GameState
+from flappy_trainer.config import SCREEN_HEIGHT
 
 
 class AITrainer:
@@ -71,10 +72,10 @@ class AITrainer:
 
     def _calculate_reward(self, current_state, action) -> tuple[float, Knowledge] | tuple[float, None]:
         reward = -10 if self.game_manager.state == GameState.GAME_OVER else 0
-        if self.game_manager.state == GameState.RUNNING and current_state.next_pipe_top_height is not None:
-            pipe_center = (current_state.next_pipe_top_height + current_state.next_pipe_bot_height) / 2
+        if self.game_manager.state == GameState.RUNNING and current_state.next_pipe_gap_pos is not None:
+            pipe_center = current_state.next_pipe_gap_pos
             distance_to_center = abs(current_state.bird_vert_pos - pipe_center)
-            max_distance = self.game_manager.SCREEN_HEIGHT  # Normalize by screen height
+            max_distance = SCREEN_HEIGHT  # Normalize by screen height
             alignment_reward = 1 - (distance_to_center / max_distance)  # Reward inversely proportional to distance
             reward += alignment_reward * 10  # Scale the reward for impact
             knowledge = self._create_knowledge(current_state, action, reward)
@@ -100,7 +101,7 @@ class AITrainer:
             bird_vert_pos=bird_vert_pos,
             bird_vert_velocity=bird_vert_velocity,
             pipe_velocity=pipe_velocity,
-            distance_to_next_pipe=distance_to_next_pipe,
+            next_pipe_distance=distance_to_next_pipe,
             next_pipe_gap_pos=next_pipe_gap_pos,
             next_pipe_gap_height=next_pipe_gap_height,
         )
