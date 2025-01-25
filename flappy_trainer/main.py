@@ -2,13 +2,8 @@ import os
 import sys
 
 import pygame
-from dotenv import load_dotenv
 
-load_dotenv()
 from flappy_trainer.game_managers.game_manager import GameManager
-
-for key, value in os.environ.items():
-    print(f"{key}: {value}")
 
 try:
     pygame.init()
