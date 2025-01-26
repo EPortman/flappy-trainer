@@ -27,21 +27,22 @@ class AITrainer:
 
     def train(self, debug=True) -> Sequential:
         print("\nEPIC 1: NO PIPES, 2 moves per second")
-        self._train_epic(num_episodes=500, action_tick=30, is_pipes_active=False)
+        self._train_epic(num_episodes=1000, action_tick=30, target_frames=1200, is_pipes_active=False)
         self.agent.reset()
 
         print("\nEPIC 2: NO PIPES, 3 moves per second")
-        self._train_epic(num_episodes=500, action_tick=20, is_pipes_active=False)
+        self._train_epic(num_episodes=1000, action_tick=20, target_frames=1200, is_pipes_active=False)
         self.agent.reset()
 
         print("\nEPIC 3: NO PIPES, 4 moves per second")
-        self._train_epic(num_episodes=500, action_tick=15, is_pipes_active=False)
+        self._train_epic(num_episodes=1000, action_tick=15, target_frames=1200, is_pipes_active=False)
         self.agent.reset()
 
-        print("\nEPIC 4: ALTERNATING LARGE PIPES")
+        print("\nEPIC 4: ALTERNATING LARGE GAPS WITH PIPES FAR APART")
         self._train_epic(
             num_episodes=1000,
             action_tick=15,
+            target_frames=1200,
             is_pipes_active=True,
             pipe_gap_size_mode="large",
             pipe_distance_mode="large",
@@ -49,10 +50,34 @@ class AITrainer:
         )
         self.agent.reset()
 
-        print("\nEPIC 5: FULL GAME")
+        print("\nEPIC 5: ALTERNATING SMALL GAPS WITH PIPES FAR APART")
         self._train_epic(
             num_episodes=1000,
             action_tick=15,
+            target_frames=1200,
+            is_pipes_active=True,
+            pipe_gap_size_mode="small",
+            pipe_distance_mode="large",
+            is_pipe_gaps_alternating=True,
+        )
+        self.agent.reset()
+
+        print("\nEPIC 6: RANDOM SMALL GAPS WITH PIPES FAR APART")
+        self._train_epic(
+            num_episodes=1000,
+            action_tick=15,
+            target_frames=1200,
+            is_pipes_active=True,
+            pipe_gap_size_mode="small",
+            pipe_distance_mode="large",
+        )
+        self.agent.reset()
+
+        print("\nEPIC 7: FULL GAME")
+        self._train_epic(
+            num_episodes=1000,
+            action_tick=15,
+            target_frames=5000,
             is_pipes_active=True,
         )
         return self.agent.model
@@ -61,6 +86,7 @@ class AITrainer:
         self,
         num_episodes: int,
         action_tick: int,
+        target_frames: int,
         is_pipes_active: bool = True,
         pipe_gap_size_mode: str = "random",
         pipe_distance_mode: str = "random",
@@ -79,7 +105,7 @@ class AITrainer:
             current_frame = 0
             pending_knowledge = []
 
-            while self.game_manager.state is GameState.RUNNING and current_frame < 1200:
+            while self.game_manager.state is GameState.RUNNING and current_frame < target_frames:
                 # Update the game (60 fps)
                 update_game(self.game_manager, frames=1, debug=True)
                 current_frame += 1
@@ -105,7 +131,7 @@ class AITrainer:
                 if current_frame % replay_interval == 0:
                     self.agent.replay(self.batch_size)
 
-            if current_frame < 1200:
+            if current_frame < target_frames:
                 # Always remember the move that caused death
                 if pending_knowledge is not None:
                     pre_state, action, action_frame = pending_knowledge[-1]

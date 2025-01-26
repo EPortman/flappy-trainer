@@ -21,14 +21,14 @@ class ReinforcementLearningAgent:
         self.model: Sequential = self._create_model()
         self.memory: deque[Knowledge] = deque(maxlen=AGENT_MAX_MEMORY)
         self.exploration_rate = 1.0
-        self.discount_factor = 0.8
+        self.discount_factor = 0.9
         self.min_exploration_rate = 0.01
         self.exploration_decay = 0.997
 
     def reset(self):
         self.memory: deque[Knowledge] = deque(maxlen=AGENT_MAX_MEMORY)
         self.exploration_rate = 1.0
-        self.discount_factor = 0.8
+        self.discount_factor = 0.9
         self.min_exploration_rate = 0.01
         self.exploration_decay = 0.997
 
