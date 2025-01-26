@@ -178,12 +178,12 @@ class GameManager(BaseGameManager):
         if self.is_pipe_gaps_alternating:
             if hasattr(self, "previous_gap_center"):
                 gap_center = (
-                    SCREEN_HEIGHT // 4
+                    SCREEN_HEIGHT // 3
                     if self.previous_gap_center == 3 * SCREEN_HEIGHT // 4
-                    else SCREEN_HEIGHT - SCREEN_HEIGHT // 4
+                    else SCREEN_HEIGHT - SCREEN_HEIGHT // 3
                 )
             else:
-                gap_center = SCREEN_HEIGHT // 4
+                gap_center = SCREEN_HEIGHT // 3
             self.previous_gap_center = gap_center
         elif self.is_pipe_gaps_centered:
             gap_center = SCREEN_HEIGHT // 2

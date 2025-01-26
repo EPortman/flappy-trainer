@@ -7,8 +7,8 @@ from flappy_trainer.ai.ai_utils import (
     get_alignment_reward,
     get_curr_pipe_velocity,
     get_nearest_pipe_details,
+    print_debug_output,
     update_game,
-    print_debug_output
 )
 from flappy_trainer.ai.environment_state import EnvironmentState
 from flappy_trainer.ai.knowledge import Knowledge
@@ -25,15 +25,58 @@ class AITrainer:
     """
 
     def __init__(self):
-        self.game_manager = GameManager()
         self.agent = ReinforcementLearningAgent()
-        self.episodes = 10000
         self.batch_size = 32
-        self.action_tick = 20
-        self.replay_interval = self.action_tick * 3
 
     def train(self, debug=True) -> Sequential:
-        for episode in range(self.episodes):
+        print("\nEPIC 1: NO PIPES, 2 moves per second")
+        self._train_epic(num_episodes=500, action_tick=30, is_pipes_active=False)
+        self.agent.reset()
+
+        print("\nEPIC 2: NO PIPES, 3 moves per second")
+        self._train_epic(num_episodes=500, action_tick=20, is_pipes_active=False)
+        self.agent.reset()
+
+        print("\nEPIC 3: NO PIPES, 4 moves per second")
+        self._train_epic(num_episodes=500, action_tick=15, is_pipes_active=False)
+        self.agent.reset()
+
+        print("\nEPIC 4: ALTERNATING LARGE PIPES")
+        self._train_epic(
+            num_episodes=1000,
+            action_tick=15,
+            is_pipes_active=True,
+            pipe_gap_size_mode="large",
+            pipe_distance_mode="large",
+            is_pipe_gaps_alternating=True,
+        )
+        self.agent.reset()
+
+        print("\nEPIC 5: FULL GAME")
+        self._train_epic(
+            num_episodes=1000,
+            action_tick=15,
+            is_pipes_active=True,
+        )
+        return self.agent.model
+
+    def _train_epic(
+        self,
+        num_episodes: int,
+        action_tick: int, 
+        is_pipes_active: bool = True,
+        pipe_gap_size_mode: str = "random",
+        pipe_distance_mode: str = "random",
+        is_pipe_gaps_centered: bool = False,
+        is_pipe_gaps_alternating: bool = False,
+        debug: bool = True,
+    ):
+        self.game_manager = GameManager(
+            is_pipes_active, pipe_gap_size_mode, pipe_distance_mode, is_pipe_gaps_centered, is_pipe_gaps_alternating
+        )
+        replay_interval = action_tick * 3
+
+        for episode in range(num_episodes):
             self.game_manager.start_game()
             current_frame = 0
             pending_knowledge = []
@@ -43,25 +86,25 @@ class AITrainer:
                 update_game(self.game_manager, frames=1, debug=True)
                 current_frame += 1
 
-                # Assess game every 20 frames
-                if current_frame % self.action_tick == 0:
+                # Assess game every 30 frames
+                if current_frame == 1 or current_frame % action_tick == 0:
                     # Agent makes an action and it is stored for later
                     current_state = self._get_current_state()
                     action = self.agent.choose_action(current_state)
                     self._apply_action(action)
                     pending_knowledge.append((current_state, action, current_frame))
 
-                    # If 20 frames have passed since the action, create and store knowledge
+                    # If 30 frames have passed since the action, create and store knowledge
                     for action_made in pending_knowledge[:]:
                         pre_state, action, action_frame = action_made
-                        if current_frame - action_frame >= self.action_tick:
+                        if current_frame - action_frame >= action_tick:
                             post_state = self._get_current_state()
                             knowledge = self._create_knowledge(pre_state, action, post_state)
                             self.agent.remember(knowledge)
                             pending_knowledge.remove(action_made)
 
                 # Train the agent on the memories every second
-                if current_frame % self.replay_interval == 0:
+                if current_frame % replay_interval == 0:
                     self.agent.replay(self.batch_size)
 
             # Always remember the move that caused death
@@ -70,9 +113,7 @@ class AITrainer:
                 knowledge = self._create_knowledge(pre_state, action, None)
                 self.agent.remember(knowledge)
 
-            print_debug_output(debug, episode, self.episodes, self.agent.exploration_rate, current_frame)
-
-        return self.agent.model
+            print_debug_output(debug, episode, num_episodes, self.agent.exploration_rate, current_frame, action_tick)
 
     def _create_knowledge(self, pre_state, action, current_state) -> Knowledge | None:
         # Penalize game over heavily

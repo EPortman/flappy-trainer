@@ -22,15 +22,14 @@ def update_game(game_manager: GameManager, frames: int, debug: bool = False):
     if debug:
         game_manager.draw_canvas()
 
-def print_debug_output(debug: bool, episode_num: int, total_episodes: int, exploration_rate: float, frames_survived):
-    if debug:
-        print(
-            f"\nEpisode {episode_num + 1} / {total_episodes}, Percent Random moves: {(exploration_rate * 100):.1f}"
-        )
+
+def print_debug_output(debug: bool, episode_num: int, total_episodes: int, exploration_rate: float, frames_survived: int, action_tick: int):
+    if not debug:
+        return
     if frames_survived < 1200:
-        print(f"   - Death! Frames Survived: {frames_survived}")
+        print(f"\tEpisode {episode_num + 1} / {total_episodes}, Exploration: {(exploration_rate):.2f} @ {(60 / action_tick):.0f}/sec ---> 💀 at {frames_survived} Frames")
     else:
-        print("   - Survived!")
+        print(f"\tEpisode {episode_num + 1} / {total_episodes}, ✅ SURVIVE!!")
 
 
 def get_curr_pipe_velocity(game_manager: GameManager) -> int:

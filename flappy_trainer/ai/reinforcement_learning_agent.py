@@ -22,20 +22,22 @@ class ReinforcementLearningAgent:
         self.memory: deque[Knowledge] = deque(maxlen=AGENT_MAX_MEMORY)
         self.exploration_rate = 1.0
         self.discount_factor = 0.8
-        self.min_exploration_rate = 0.1
-        self.exploration_decay = 0.995
+        self.min_exploration_rate = 0.01
+        self.exploration_decay = 0.997
+
+    def reset(self):
+        self.memory: deque[Knowledge] = deque(maxlen=AGENT_MAX_MEMORY)
+        self.exploration_rate = 1.0
+        self.discount_factor = 0.8
+        self.min_exploration_rate = 0.01
+        self.exploration_decay = 0.997
 
     def _create_model(self) -> Sequential:
         """Define and compile the neural network model."""
         model = Sequential(
             [
-                Dense(128, input_dim=EnvironmentState.get_num_features(), activation="relu"),
-                BatchNormalization(),
-                Dropout(0.2),
-                Dense(128, activation="relu"),
-                BatchNormalization(),
-                Dropout(0.2),
-                Dense(64, activation="relu"),
+                Dense(64, input_dim=EnvironmentState.get_num_features(), activation="relu"),
+                Dense(32, activation="relu"),
                 Dense(2, activation="linear"),  # Output Q-values for both actions
             ]
         )
