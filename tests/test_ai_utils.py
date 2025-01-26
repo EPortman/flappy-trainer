@@ -1,16 +1,8 @@
 import pygame
 
 from flappy_trainer.ai.ai_utils import get_curr_pipe_velocity, get_nearest_pipe_details
-from flappy_trainer.config import (
-    BIRD_START_X_POS,
-    INITIAL_PIPE_SPEED,
-    PIPE_SPEED_INCREASE_PER_LEVEL_UP,
-    PIPE_WIDTH,
-    SCREEN_HEIGHT,
-    SCREEN_WIDTH,
-)
+from flappy_trainer.config import INITIAL_PIPE_SPEED, PIPE_SPEED_INCREASE_PER_LEVEL_UP, SCREEN_HEIGHT, SCREEN_WIDTH
 from flappy_trainer.game_managers.game_manager import GameManager
-from flappy_trainer.utils import PipeColor
 
 
 class TestAIUtils:

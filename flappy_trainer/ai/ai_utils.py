@@ -9,7 +9,6 @@ from flappy_trainer.config import (
 )
 from flappy_trainer.game_managers.game_manager import GameManager
 from flappy_trainer.game_objects.pipe.pipe import Pipe
-from flappy_trainer.utils import get_env_var_as_int
 
 
 class Action(Enum):
@@ -23,11 +22,15 @@ def update_game(game_manager: GameManager, frames: int, debug: bool = False):
         game_manager.draw_canvas()
 
 
-def print_debug_output(debug: bool, episode_num: int, total_episodes: int, exploration_rate: float, frames_survived: int, action_tick: int):
+def print_debug_output(
+    debug: bool, episode_num: int, total_episodes: int, exploration_rate: float, frames_survived: int, action_tick: int
+):
     if not debug:
         return
     if frames_survived < 1200:
-        print(f"\tEpisode {episode_num + 1} / {total_episodes}, Exploration: {(exploration_rate):.2f} @ {(60 / action_tick):.0f}/sec ---> 💀 at {frames_survived} Frames")
+        print(
+            f"\tEpisode {episode_num + 1} / {total_episodes}, Exploration: {(exploration_rate):.2f} @ {(60 / action_tick):.0f}/sec ---> 💀 at {frames_survived} Frames"  # noqa: E501
+        )
     else:
         print(f"\tEpisode {episode_num + 1} / {total_episodes}, ✅ SURVIVE!!")
 
@@ -48,11 +51,3 @@ def get_nearest_pipe_details(game_manager: GameManager) -> tuple[int, int, int]:
         next_pipe_gap_pos = pipe.gap_center
         next_pipe_gap_height = pipe.gap_height
     return (next_pipe_distance, next_pipe_gap_pos, next_pipe_gap_height)
-
-
-def get_alignment_reward(state):
-    pipe_center = (state.next_pipe_top_height + state.next_pipe_bot_height) / 2
-    distance_to_center = abs(state.bird_vert_pos - pipe_center)
-    max_distance = get_env_var_as_int("SCREEN_HEIGHT")
-    alignment_reward = 1 - (distance_to_center / max_distance)
-    reward += alignment_reward * 10

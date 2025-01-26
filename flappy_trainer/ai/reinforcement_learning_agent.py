@@ -2,7 +2,7 @@ import random
 from collections import deque
 
 import numpy as np
-from tensorflow.keras.layers import BatchNormalization, Dense, Dropout
+from tensorflow.keras.layers import Dense
 from tensorflow.keras.models import Sequential
 
 from flappy_trainer.ai.ai_utils import Action

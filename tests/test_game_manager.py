@@ -1,14 +1,7 @@
-import time
-from random import randint
-
 import pygame
-import pytest
 
 from flappy_trainer.config import (
     INITIAL_PIPE_SPEED,
-    MAX_PIPE_VELOCITY,
-    MAX_TIME_BETWEEN_PIPES,
-    MIN_TIME_BETWEEN_PIPES,
     PIPE_DEFAULT_GAP_HEIGHT,
     PIPE_DEFAULT_Y_POS,
     PIPE_WIDTH,
@@ -19,7 +12,7 @@ from flappy_trainer.config import (
 from flappy_trainer.game_managers.game_manager import GameManager
 from flappy_trainer.game_objects.bird.bird import Bird
 from flappy_trainer.game_objects.pipe.pipe import Pipe
-from flappy_trainer.utils import GameState, PipeColor
+from flappy_trainer.utils import GameState
 
 
 class TestGameManager:

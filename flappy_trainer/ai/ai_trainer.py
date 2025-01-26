@@ -1,10 +1,7 @@
-import time
-
 from tensorflow.keras.models import Sequential
 
 from flappy_trainer.ai.ai_utils import (
     Action,
-    get_alignment_reward,
     get_curr_pipe_velocity,
     get_nearest_pipe_details,
     print_debug_output,
@@ -63,7 +60,7 @@ class AITrainer:
     def _train_epic(
         self,
         num_episodes: int,
-        action_tick: int, 
+        action_tick: int,
         is_pipes_active: bool = True,
         pipe_gap_size_mode: str = "random",
         pipe_distance_mode: str = "random",
@@ -75,6 +72,7 @@ class AITrainer:
             is_pipes_active, pipe_gap_size_mode, pipe_distance_mode, is_pipe_gaps_centered, is_pipe_gaps_alternating
         )
         replay_interval = action_tick * 3
+        num_correct_in_a_row = 0
 
         for episode in range(num_episodes):
             self.game_manager.start_game()
@@ -107,13 +105,22 @@ class AITrainer:
                 if current_frame % replay_interval == 0:
                     self.agent.replay(self.batch_size)
 
-            # Always remember the move that caused death
-            if current_frame < 1200 and pending_knowledge is not None:
-                pre_state, action, action_frame = pending_knowledge[-1]
-                knowledge = self._create_knowledge(pre_state, action, None)
-                self.agent.remember(knowledge)
+            if current_frame < 1200:
+                # Always remember the move that caused death
+                if pending_knowledge is not None:
+                    pre_state, action, action_frame = pending_knowledge[-1]
+                    knowledge = self._create_knowledge(pre_state, action, None)
+                    self.agent.remember(knowledge)
+                num_correct_in_a_row = 0
+            else:
+                num_correct_in_a_row += 1
 
             print_debug_output(debug, episode, num_episodes, self.agent.exploration_rate, current_frame, action_tick)
+
+            # Stop training if 10 episodes are successfully completed in a row
+            if num_correct_in_a_row >= 10:
+                print(f"\tTraining stopped after {episode + 1} episodes. 10 successful episodes in a row!")
+                break
 
     def _create_knowledge(self, pre_state, action, current_state) -> Knowledge | None:
         # Penalize game over heavily
