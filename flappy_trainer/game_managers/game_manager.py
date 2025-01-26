@@ -41,7 +41,7 @@ class GameManager(BaseGameManager):
         self.bird = None
         self.pipes = []
         self.time_between_pipes = randint(MIN_TIME_BETWEEN_PIPES, MAX_TIME_BETWEEN_PIPES)
-        self.is_pipes_active = True
+        self.is_pipes_active = False
         self.is_pipe_spawns_consistent = False
         self.is_pipe_gap_heights_consistent = False
         self.is_pipe_gaps_centered = False

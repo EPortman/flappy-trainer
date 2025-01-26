@@ -2,13 +2,20 @@ import time
 
 from tensorflow.keras.models import Sequential
 
-from flappy_trainer.ai.ai_utils import Action, get_alignment_reward, get_curr_pipe_velocity, get_nearest_pipe_details
+from flappy_trainer.ai.ai_utils import (
+    Action,
+    get_alignment_reward,
+    get_curr_pipe_velocity,
+    get_nearest_pipe_details,
+    update_game,
+    print_debug_output
+)
 from flappy_trainer.ai.environment_state import EnvironmentState
 from flappy_trainer.ai.knowledge import Knowledge
 from flappy_trainer.ai.reinforcement_learning_agent import ReinforcementLearningAgent
+from flappy_trainer.config import SCREEN_HEIGHT
 from flappy_trainer.game_managers.game_manager import GameManager
 from flappy_trainer.utils import GameState
-from flappy_trainer.config import SCREEN_HEIGHT
 
 
 class AITrainer:
@@ -22,72 +29,71 @@ class AITrainer:
         self.agent = ReinforcementLearningAgent()
         self.episodes = 10000
         self.batch_size = 32
-        self.decision_interval = 20
-        self.replay_interval = self.decision_interval * 3
-        self.frame_count = 0
+        self.action_tick = 20
+        self.replay_interval = self.action_tick * 3
 
     def train(self, debug=True) -> Sequential:
-        """
-        Train the agent by running episodes of the game.
-
-        Args:
-            debug (bool): If True, includes a delay for real-time visualization.
-            decision_interval (int): Number of frames to skip between decisions.
-        Returns:
-            Sequential: The trained model.
-        """
         for episode in range(self.episodes):
             self.game_manager.start_game()
-            total_reward = 0
+            current_frame = 0
+            pending_knowledge = []
 
-            while self.game_manager.state is GameState.RUNNING:
+            while self.game_manager.state is GameState.RUNNING and current_frame < 1200:
                 # Update the game (60 fps)
-                self.game_manager.update(1 / 60)
-                self.game_manager.draw_canvas()
-                self.frame_count += 1
-                total_reward += 1
+                update_game(self.game_manager, frames=1, debug=True)
+                current_frame += 1
 
-                # Choose action and calculate reward from action
-                if self.frame_count % self.decision_interval == 0:
+                # Assess game every 20 frames
+                if current_frame % self.action_tick == 0:
+                    # Agent makes an action and it is stored for later
                     current_state = self._get_current_state()
                     action = self.agent.choose_action(current_state)
                     self._apply_action(action)
-                    reward, knowledge = self._calculate_reward(current_state, action)
-                    if knowledge:
-                        self.agent.remember(knowledge)
-                    total_reward += reward
+                    pending_knowledge.append((current_state, action, current_frame))
 
-                if debug:
-                    time.sleep(1 / 60)
+                    # If 20 frames have passed since the action, create and store knowledge
+                    for action_made in pending_knowledge[:]:
+                        pre_state, action, action_frame = action_made
+                        if current_frame - action_frame >= self.action_tick:
+                            post_state = self._get_current_state()
+                            knowledge = self._create_knowledge(pre_state, action, post_state)
+                            self.agent.remember(knowledge)
+                            pending_knowledge.remove(action_made)
 
-                # Replay synchronously at intervals
-                if self.frame_count % self.replay_interval == 0:
+                # Train the agent on the memories every second
+                if current_frame % self.replay_interval == 0:
                     self.agent.replay(self.batch_size)
 
-            print(f"Episode {episode + 1} / {self.episodes}, Total Reward: {total_reward}")
-            print(
-                f"Q-values: {self.agent.model.predict(current_state.to_numpy_array(include_batch_dim=True), verbose=0)}"
-            )
+            # Always remember the move that caused death
+            if current_frame < 1200 and pending_knowledge is not None:
+                pre_state, action, action_frame = pending_knowledge[-1]
+                knowledge = self._create_knowledge(pre_state, action, None)
+                self.agent.remember(knowledge)
+
+            print_debug_output(debug, episode, self.episodes, self.agent.exploration_rate, current_frame)
+
         return self.agent.model
 
-    def _calculate_reward(self, current_state, action) -> tuple[float, Knowledge] | tuple[float, None]:
-        reward = -10 if self.game_manager.state == GameState.GAME_OVER else 0
-        if self.game_manager.state == GameState.RUNNING and current_state.next_pipe_gap_pos is not None:
-            pipe_center = current_state.next_pipe_gap_pos
-            distance_to_center = abs(current_state.bird_vert_pos - pipe_center)
-            max_distance = SCREEN_HEIGHT  # Normalize by screen height
-            alignment_reward = 1 - (distance_to_center / max_distance)  # Reward inversely proportional to distance
-            reward += alignment_reward * 10  # Scale the reward for impact
-            knowledge = self._create_knowledge(current_state, action, reward)
-            return (reward, knowledge)
-        return (reward, None)
+    def _create_knowledge(self, pre_state, action, current_state) -> Knowledge | None:
+        # Penalize game over heavily
+        if self.game_manager.state == GameState.GAME_OVER:
+            return Knowledge(pre_state, action, -100, None)
+
+        # Reward if bird is closer to the target
+        pre_distance_to_target = abs(
+            pre_state.bird_vert_pos / SCREEN_HEIGHT - pre_state.next_pipe_gap_pos / SCREEN_HEIGHT
+        )
+        post_distance_to_target = abs(
+            current_state.bird_vert_pos / SCREEN_HEIGHT - current_state.next_pipe_gap_pos / SCREEN_HEIGHT
+        )
+        delta_distance = pre_distance_to_target - post_distance_to_target
+        reward = delta_distance * 100
+
+        return Knowledge(pre_state, action, reward, current_state)
 
     def _apply_action(self, action: Action):
         if action == Action.FLAP:
             self.game_manager.bird.flap()
-
-        delta_time = 1 / 60
-        self.game_manager.update(delta_time)
 
     def _get_current_state(self) -> EnvironmentState:
         bird_is_alive = self.game_manager.state == GameState.RUNNING
@@ -105,8 +111,3 @@ class AITrainer:
             next_pipe_gap_pos=next_pipe_gap_pos,
             next_pipe_gap_height=next_pipe_gap_height,
         )
-
-    def _create_knowledge(self, prev_state: EnvironmentState, action: Action, reward: float) -> Knowledge:
-        post_state = self._get_current_state()
-        knowledge = Knowledge(prev_state, action, reward, post_state)
-        return knowledge

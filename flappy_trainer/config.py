@@ -1,5 +1,7 @@
-from flappy_trainer.utils import get_env_var_as_float, get_env_var_as_int, get_env_var_as_string, get_env_var_as_tuple
 from dotenv import load_dotenv
+
+from flappy_trainer.utils import get_env_var_as_float, get_env_var_as_int, get_env_var_as_string, get_env_var_as_tuple
+
 load_dotenv()
 
 DEBUG = True

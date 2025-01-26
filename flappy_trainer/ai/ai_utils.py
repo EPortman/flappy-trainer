@@ -17,6 +17,22 @@ class Action(Enum):
     NO_FLAP = 0
 
 
+def update_game(game_manager: GameManager, frames: int, debug: bool = False):
+    game_manager.update(1 / 60)
+    if debug:
+        game_manager.draw_canvas()
+
+def print_debug_output(debug: bool, episode_num: int, total_episodes: int, exploration_rate: float, frames_survived):
+    if debug:
+        print(
+            f"\nEpisode {episode_num + 1} / {total_episodes}, Percent Random moves: {(exploration_rate * 100):.1f}"
+        )
+    if frames_survived < 1200:
+        print(f"   - Death! Frames Survived: {frames_survived}")
+    else:
+        print("   - Survived!")
+
+
 def get_curr_pipe_velocity(game_manager: GameManager) -> int:
     return INITIAL_PIPE_SPEED + (game_manager.level * PIPE_SPEED_INCREASE_PER_LEVEL_UP)
 
