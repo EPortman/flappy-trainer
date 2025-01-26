@@ -22,6 +22,8 @@ from flappy_trainer.config import (
     MIN_TIME_BETWEEN_PIPES,
     PIPE_DEFAULT_GAP_HEIGHT,
     PIPE_DEFAULT_Y_POS,
+    PIPE_MAX_GAP_HEIGHT,
+    PIPE_MIN_GAP_HEIGHT,
     PIPE_WIDTH,
     SCREEN_HEIGHT,
     START_LEVEL,
@@ -34,19 +36,24 @@ from flappy_trainer.utils import GameState, PipeColor
 
 
 class GameManager(BaseGameManager):
-    def __init__(self):
+    def __init__(
+        self,
+        is_pipes: bool = True,
+        pipe_gap_size_mode: str = "random",  # Options: 'large', 'small', 'random'
+        pipe_distance_mode: str = "random",  # Options: 'large', 'random'
+        is_pipe_gaps_centered: bool = False,
+        is_pipe_gaps_alternating: bool = False,
+    ):
         """Initialize the game manager with the initial state and menus."""
         super().__init__()
         self.state = GameState.START_MENU
         self.bird = None
         self.pipes = []
-        self.time_between_pipes = randint(MIN_TIME_BETWEEN_PIPES, MAX_TIME_BETWEEN_PIPES)
-        self.is_pipes_active = False
-        self.is_pipe_spawns_consistent = False
-        self.is_pipe_gap_heights_consistent = False
-        self.is_pipe_gaps_centered = False
-        self.pipe_gap_height = PIPE_DEFAULT_GAP_HEIGHT
-        self.pipe_gap_y_pos = PIPE_DEFAULT_Y_POS
+        self.is_pipes_active = is_pipes
+        self.pipe_gap_size_mode = pipe_gap_size_mode
+        self.pipe_distance_mode = pipe_distance_mode
+        self.is_pipe_gaps_centered = is_pipe_gaps_centered
+        self.is_pipe_gaps_alternating = is_pipe_gaps_alternating
 
     def start_game(self):
         """Reset and initialize game objects to start the game."""
@@ -58,6 +65,14 @@ class GameManager(BaseGameManager):
         self.score = START_SCORE
         self.pipe_speed = INITIAL_PIPE_SPEED
         self.next_level_score = self.score + self.score_per_level_up
+        self.time_since_last_pipe = 0
+
+        if self.pipe_distance_mode == "large":
+            self.time_between_pipes = MAX_TIME_BETWEEN_PIPES
+        elif self.pipe_distance_mode == "random":
+            self.time_between_pipes = randint(MIN_TIME_BETWEEN_PIPES, MAX_TIME_BETWEEN_PIPES)
+        else:
+            self.time_between_pipes = MIN_TIME_BETWEEN_PIPES
 
     def handle_event(self, event: pygame.event.Event):
         """Handle user input events based on the current game state."""
@@ -151,13 +166,36 @@ class GameManager(BaseGameManager):
 
     def _spawn_pipe(self):
         """Spawn a new pipe and add it to the list of pipes."""
-        gap_height = self.pipe_gap_height if self.is_pipe_gap_heights_consistent else None
-        gap_center = (
-            SCREEN_HEIGHT // 2
-            if self.is_pipe_gaps_centered
-            else self.pipe_gap_y_pos if self.is_pipe_gap_heights_consistent else None
-        )
-        pipe = Pipe(PipeColor.GREEN, gap_center=gap_center, gap_height=gap_height)
-        if not self.is_pipe_spawns_consistent:
+        # Determine gap height based on pipe_gap_size_mode
+        if self.pipe_gap_size_mode == "large":
+            gap_height = PIPE_MAX_GAP_HEIGHT
+        elif self.pipe_gap_size_mode == "small":
+            gap_height = PIPE_MIN_GAP_HEIGHT
+        else:
+            gap_height = randint(PIPE_MIN_GAP_HEIGHT, PIPE_MAX_GAP_HEIGHT)
+
+        # Determine gap center
+        if self.is_pipe_gaps_alternating:
+            if hasattr(self, "previous_gap_center"):
+                gap_center = (
+                    SCREEN_HEIGHT // 4
+                    if self.previous_gap_center == 3 * SCREEN_HEIGHT // 4
+                    else SCREEN_HEIGHT - SCREEN_HEIGHT // 4
+                )
+            else:
+                gap_center = SCREEN_HEIGHT // 4
+            self.previous_gap_center = gap_center
+        elif self.is_pipe_gaps_centered:
+            gap_center = SCREEN_HEIGHT // 2
+        else:
+            min_center = gap_height // 2 + 50
+            max_center = SCREEN_HEIGHT - gap_height // 2 - 50
+            gap_center = randint(min_center, max_center)
+
+        # Determine time between pipes based on pipe_distance_mode
+        if self.pipe_distance_mode == "large":
+            self.time_between_pipes = MAX_TIME_BETWEEN_PIPES
+        elif self.pipe_distance_mode == "random":
             self.time_between_pipes = randint(MIN_TIME_BETWEEN_PIPES, MAX_TIME_BETWEEN_PIPES)
+        pipe = Pipe(PipeColor.GREEN, gap_center=gap_center, gap_height=gap_height)
         self.pipes.append(pipe)
