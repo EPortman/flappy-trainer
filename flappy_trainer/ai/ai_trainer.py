@@ -53,7 +53,7 @@ class AITrainer:
                 is_pipes_active=curriculum["is_pipes_active"],
                 pipe_gap_size_mode=curriculum.get("pipe_gap_size_mode"),
                 pipe_distance_mode=curriculum.get("pipe_distance_mode"),
-                is_pipe_gaps_alternating=curriculum.get("is_pipe_gaps_alternating"),
+                pipe_gap_loc_mode=curriculum.get("pipe_gap_loc_mode"),
             )
             self.agent.reset()
 
@@ -64,15 +64,12 @@ class AITrainer:
         num_episodes: int,
         action_tick: int,
         target_frames: int,
-        is_pipes_active: bool = True,
-        pipe_gap_size_mode: str = "random",
-        pipe_distance_mode: str = "random",
-        is_pipe_gaps_centered: bool = False,
-        is_pipe_gaps_alternating: bool = False,
+        is_pipes_active: bool,
+        pipe_gap_size_mode: str,
+        pipe_distance_mode: str,
+        pipe_gap_loc_mode: str,
     ):
-        self.game_manager = GameManager(
-            is_pipes_active, pipe_gap_size_mode, pipe_distance_mode, is_pipe_gaps_centered, is_pipe_gaps_alternating
-        )
+        self.game_manager = GameManager(is_pipes_active, pipe_gap_size_mode, pipe_distance_mode, pipe_gap_loc_mode)
         replay_interval = action_tick * 3
         num_correct_in_a_row = 0
 

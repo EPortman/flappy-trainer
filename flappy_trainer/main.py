@@ -7,11 +7,7 @@ from flappy_trainer.game_managers.game_manager import GameManager
 try:
     pygame.init()
     game_manager = GameManager(
-        is_pipes=True,
-        pipe_gap_size_mode="large",
-        pipe_distance_mode="large",
-        is_pipe_gaps_centered=False,
-        is_pipe_gaps_alternating=True,
+        is_pipes=True, pipe_gap_size_mode="random", pipe_distance_mode="random", pipe_gap_loc_mode="random"
     )
     clock = pygame.time.Clock()
 except EnvironmentError as e:

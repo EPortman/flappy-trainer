@@ -5,8 +5,7 @@
   is_pipes_active: false
   pipe_gap_size_mode: "random"
   pipe_distance_mode: "random"
-  is_pipe_gaps_centered: false
-  is_pipe_gaps_alternating: false
+  pipe_gap_loc_mode: "random"
 
 - name: "CURRICULUM 2: NO PIPES, 3 moves per second"
   num_episodes: 1000
@@ -15,8 +14,7 @@
   is_pipes_active: false
   pipe_gap_size_mode: "random"
   pipe_distance_mode: "random"
-  is_pipe_gaps_centered: false
-  is_pipe_gaps_alternating: false
+  pipe_gap_loc_mode: "random"
 
 - name: "CURRICULUM 3: NO PIPES, 4 moves per second"
   num_episodes: 1000
@@ -25,45 +23,112 @@
   is_pipes_active: false
   pipe_gap_size_mode: "random"
   pipe_distance_mode: "random"
-  is_pipe_gaps_centered: false
-  is_pipe_gaps_alternating: false
+  pipe_gap_loc_mode: "random"
 
-- name: "CURRICULUM 4: ALTERNATING LARGE GAPS WITH PIPES FAR APART"
+- name: "CURRICULUM 4: LARGE CENTERED GAPS WITH PIPES FAR APART"
+  num_episodes: 1000
+  action_tick: 15
+  target_frames: 1200
+  is_pipes_active: false
+  pipe_gap_size_mode: "large"
+  pipe_distance_mode: "large"
+  pipe_gap_loc_mode: "center"
+
+- name: "CURRICULUM 5: CENTERED GAPS WITH PIPES FAR APART"
+  num_episodes: 1000
+  action_tick: 15
+  target_frames: 1200
+  is_pipes_active: false
+  pipe_gap_size_mode: "random"
+  pipe_distance_mode: "large"
+  pipe_gap_loc_mode: "center"
+
+- name: "CURRICULUM 6: SMALL CENTERED GAPS WITH PIPES FAR APART"
+  num_episodes: 1000
+  action_tick: 15
+  target_frames: 1200
+  is_pipes_active: false
+  pipe_gap_size_mode: "small"
+  pipe_distance_mode: "large"
+  pipe_gap_loc_mode: "center"
+
+- name: "CURRICULUM 7: LARGE TOP GAPS WITH PIPES FAR APART"
+  num_episodes: 1000
+  action_tick: 15
+  target_frames: 1200
+  is_pipes_active: false
+  pipe_gap_size_mode: "large"
+  pipe_distance_mode: "large"
+  pipe_gap_loc_mode: "top"
+
+- name: "CURRICULUM 8: SMALL TOP GAPS WITH PIPES FAR APART"
+  num_episodes: 1000
+  action_tick: 15
+  target_frames: 1200
+  is_pipes_active: false
+  pipe_gap_size_mode: "small"
+  pipe_distance_mode: "large"
+  pipe_gap_loc_mode: "top"
+
+- name: "CURRICULUM 9: LARGE BOTTOM GAPS WITH PIPES FAR APART"
+  num_episodes: 1000
+  action_tick: 15
+  target_frames: 1200
+  is_pipes_active: false
+  pipe_gap_size_mode: "large"
+  pipe_distance_mode: "large"
+  pipe_gap_loc_mode: "bottom"
+
+- name: "CURRICULUM 10: SMALL BOTTOM GAPS WITH PIPES FAR APART"
+  num_episodes: 1000
+  action_tick: 15
+  target_frames: 1200
+  is_pipes_active: false
+  pipe_gap_size_mode: "small"
+  pipe_distance_mode: "large"
+  pipe_gap_loc_mode: "bottom"
+
+- name: "CURRICULUM 11: ALTERNATING LARGE GAPS WITH PIPES FAR APART"
   num_episodes: 1000
   action_tick: 15
   target_frames: 1200
   is_pipes_active: true
   pipe_gap_size_mode: "large"
   pipe_distance_mode: "large"
-  is_pipe_gaps_centered: false
-  is_pipe_gaps_alternating: true
+  pipe_gap_loc_mode: "alternating"
 
-- name: "CURRICULUM 5: ALTERNATING SMALL GAPS WITH PIPES FAR APART"
+- name: "CURRICULUM 12: ALTERNATING GAPS WITH PIPES FAR APART"
+  num_episodes: 1000
+  action_tick: 15
+  target_frames: 1200
+  is_pipes_active: true
+  pipe_gap_size_mode: "random"
+  pipe_distance_mode: "large"
+  pipe_gap_loc_mode: "alternating"
+
+- name: "CURRICULUM 13: ALTERNATING SMALL GAPS WITH PIPES FAR APART"
   num_episodes: 1000
   action_tick: 15
   target_frames: 1200
   is_pipes_active: true
   pipe_gap_size_mode: "small"
   pipe_distance_mode: "large"
-  is_pipe_gaps_centered: false
-  is_pipe_gaps_alternating: true
+  pipe_gap_loc_mode: "alternating"
 
-- name: "CURRICULUM 6: RANDOM SMALL GAPS WITH PIPES FAR APART"
+- name: "CURRICULUM 13: RANDOM SMALL GAPS WITH PIPES FAR APART"
   num_episodes: 1000
   action_tick: 15
   target_frames: 1200
   is_pipes_active: true
   pipe_gap_size_mode: "small"
   pipe_distance_mode: "large"
-  is_pipe_gaps_centered: false
-  is_pipe_gaps_alternating: false
+  pipe_gap_loc_mode: "random"
 
-- name: "CURRICULUM 7: FULL GAME"
+- name: "CURRICULUM 14: FULL GAME"
   num_episodes: 1000
   action_tick: 15
   target_frames: 5000
   is_pipes_active: true
   pipe_gap_size_mode: "random"
   pipe_distance_mode: "random"
-  is_pipe_gaps_centered: false
-  is_pipe_gaps_alternating: false
+  pipe_gap_loc_mode: "random"

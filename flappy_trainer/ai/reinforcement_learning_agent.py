@@ -21,15 +21,15 @@ class ReinforcementLearningAgent:
         self.memory: deque[Knowledge] = deque(maxlen=AGENT_MAX_MEMORY)
         self.exploration_rate = 1.0
         self.discount_factor = 0.9
-        self.min_exploration_rate = 0.02
-        self.exploration_decay = 0.997
+        self.min_exploration_rate = 0.03
+        self.exploration_decay = 0.995
 
     def reset(self):
         self.memory: deque[Knowledge] = deque(maxlen=AGENT_MAX_MEMORY)
         self.exploration_rate = 1.0
         self.discount_factor = 0.9
-        self.min_exploration_rate = 0.01
-        self.exploration_decay = 0.997
+        self.min_exploration_rate = 0.03
+        self.exploration_decay = 0.995
 
     def _create_model(self) -> Sequential:
         """Define and compile the neural network model."""

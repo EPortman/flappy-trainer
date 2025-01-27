@@ -39,8 +39,7 @@ class GameManager(BaseGameManager):
         is_pipes: bool = True,
         pipe_gap_size_mode: str = "random",  # Options: 'large', 'small', 'random'
         pipe_distance_mode: str = "random",  # Options: 'large', 'random'
-        is_pipe_gaps_centered: bool = False,
-        is_pipe_gaps_alternating: bool = False,
+        pipe_gap_loc_mode: str = "random",  # Options: 'top', 'bottom', 'center', 'alternating', 'random',
     ):
         """Initialize the game manager with the initial state and menus."""
         super().__init__()
@@ -50,8 +49,8 @@ class GameManager(BaseGameManager):
         self.is_pipes_active = is_pipes
         self.pipe_gap_size_mode = pipe_gap_size_mode
         self.pipe_distance_mode = pipe_distance_mode
-        self.is_pipe_gaps_centered = is_pipe_gaps_centered
-        self.is_pipe_gaps_alternating = is_pipe_gaps_alternating
+        self.pipe_gap_loc_mode = pipe_gap_loc_mode
+        self.previous_gap_center = None
 
     def start_game(self):
         """Reset and initialize game objects to start the game."""
@@ -173,18 +172,22 @@ class GameManager(BaseGameManager):
             gap_height = randint(PIPE_MIN_GAP_HEIGHT, PIPE_MAX_GAP_HEIGHT)
 
         # Determine gap center
-        if self.is_pipe_gaps_alternating:
-            if hasattr(self, "previous_gap_center"):
-                gap_center = (
-                    SCREEN_HEIGHT // 3
-                    if self.previous_gap_center == 3 * SCREEN_HEIGHT // 4
-                    else SCREEN_HEIGHT - SCREEN_HEIGHT // 3
-                )
+        if self.pipe_gap_loc_mode == "alternating":
+            if not hasattr(self, "previous_gap_center") or self.previous_gap_center is None:
+                self.previous_gap_center = SCREEN_HEIGHT // 3
             else:
-                gap_center = SCREEN_HEIGHT // 3
-            self.previous_gap_center = gap_center
-        elif self.is_pipe_gaps_centered:
+                self.previous_gap_center = (
+                    SCREEN_HEIGHT - SCREEN_HEIGHT // 3
+                    if self.previous_gap_center == SCREEN_HEIGHT // 3
+                    else SCREEN_HEIGHT // 3
+                )
+            gap_center = self.previous_gap_center
+        elif self.pipe_gap_loc_mode == "center":
             gap_center = SCREEN_HEIGHT // 2
+        elif self.pipe_gap_loc_mode == "top":
+            gap_center = SCREEN_HEIGHT // 3
+        elif self.pipe_gap_loc_mode == "bottom":
+            gap_center = SCREEN_HEIGHT - SCREEN_HEIGHT // 3
         else:
             min_center = gap_height // 2 + 50
             max_center = SCREEN_HEIGHT - gap_height // 2 - 50
