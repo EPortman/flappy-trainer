@@ -1,0 +1,69 @@
+- name: "CURRICULUM 1: NO PIPES, 2 moves per second"
+  num_episodes: 1000
+  action_tick: 30
+  target_frames: 1200
+  is_pipes_active: false
+  pipe_gap_size_mode: "random"
+  pipe_distance_mode: "random"
+  is_pipe_gaps_centered: false
+  is_pipe_gaps_alternating: false
+
+- name: "CURRICULUM 2: NO PIPES, 3 moves per second"
+  num_episodes: 1000
+  action_tick: 20
+  target_frames: 1200
+  is_pipes_active: false
+  pipe_gap_size_mode: "random"
+  pipe_distance_mode: "random"
+  is_pipe_gaps_centered: false
+  is_pipe_gaps_alternating: false
+
+- name: "CURRICULUM 3: NO PIPES, 4 moves per second"
+  num_episodes: 1000
+  action_tick: 15
+  target_frames: 1200
+  is_pipes_active: false
+  pipe_gap_size_mode: "random"
+  pipe_distance_mode: "random"
+  is_pipe_gaps_centered: false
+  is_pipe_gaps_alternating: false
+
+- name: "CURRICULUM 4: ALTERNATING LARGE GAPS WITH PIPES FAR APART"
+  num_episodes: 1000
+  action_tick: 15
+  target_frames: 1200
+  is_pipes_active: true
+  pipe_gap_size_mode: "large"
+  pipe_distance_mode: "large"
+  is_pipe_gaps_centered: false
+  is_pipe_gaps_alternating: true
+
+- name: "CURRICULUM 5: ALTERNATING SMALL GAPS WITH PIPES FAR APART"
+  num_episodes: 1000
+  action_tick: 15
+  target_frames: 1200
+  is_pipes_active: true
+  pipe_gap_size_mode: "small"
+  pipe_distance_mode: "large"
+  is_pipe_gaps_centered: false
+  is_pipe_gaps_alternating: true
+
+- name: "CURRICULUM 6: RANDOM SMALL GAPS WITH PIPES FAR APART"
+  num_episodes: 1000
+  action_tick: 15
+  target_frames: 1200
+  is_pipes_active: true
+  pipe_gap_size_mode: "small"
+  pipe_distance_mode: "large"
+  is_pipe_gaps_centered: false
+  is_pipe_gaps_alternating: false
+
+- name: "CURRICULUM 7: FULL GAME"
+  num_episodes: 1000
+  action_tick: 15
+  target_frames: 5000
+  is_pipes_active: true
+  pipe_gap_size_mode: "random"
+  pipe_distance_mode: "random"
+  is_pipe_gaps_centered: false
+  is_pipe_gaps_alternating: false

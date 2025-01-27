@@ -5,9 +5,8 @@ import numpy as np
 from tensorflow.keras.layers import Dense
 from tensorflow.keras.models import Sequential
 
-from flappy_trainer.ai.ai_utils import Action
+from flappy_trainer.ai.ai_utils import Action, Knowledge
 from flappy_trainer.ai.environment_state import EnvironmentState
-from flappy_trainer.ai.knowledge import Knowledge
 from flappy_trainer.config import AGENT_MAX_MEMORY
 
 
@@ -22,7 +21,7 @@ class ReinforcementLearningAgent:
         self.memory: deque[Knowledge] = deque(maxlen=AGENT_MAX_MEMORY)
         self.exploration_rate = 1.0
         self.discount_factor = 0.9
-        self.min_exploration_rate = 0.01
+        self.min_exploration_rate = 0.02
         self.exploration_decay = 0.997
 
     def reset(self):
@@ -36,9 +35,10 @@ class ReinforcementLearningAgent:
         """Define and compile the neural network model."""
         model = Sequential(
             [
-                Dense(64, input_dim=EnvironmentState.get_num_features(), activation="relu"),
+                Dense(128, input_dim=EnvironmentState.get_num_features(), activation="relu"),
+                Dense(64, activation="relu"),
                 Dense(32, activation="relu"),
-                Dense(2, activation="linear"),  # Output Q-values for both actions
+                Dense(2, activation="linear"),
             ]
         )
         model.compile(optimizer="adam", loss="mean_squared_error")

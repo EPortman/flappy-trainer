@@ -1,88 +1,65 @@
+"""
+AITrainer
+
+This class manages the training process for the Flappy Bird AI, coordinating the interaction between
+the reinforcement learning agent and the game environment. Training is structured into curricula,
+progressing from simple to complex scenarios to build the agent's skills over time.
+
+Key Features:
+- Oversees the GameManager and Reinforcement Learning Agent interactions
+- Structures training into progressively harder curricula
+- Simulates gameplay by applying the agent's actions to the game
+- Generates training data (knowledge) based on game events
+"""
+
+import os
+
+import yaml
 from tensorflow.keras.models import Sequential
 
 from flappy_trainer.ai.ai_utils import (
     Action,
+    Knowledge,
     get_curr_pipe_velocity,
     get_nearest_pipe_details,
+    get_second_nearest_pipe_details,
     print_debug_output,
-    update_game,
 )
 from flappy_trainer.ai.environment_state import EnvironmentState
-from flappy_trainer.ai.knowledge import Knowledge
 from flappy_trainer.ai.reinforcement_learning_agent import ReinforcementLearningAgent
-from flappy_trainer.config import SCREEN_HEIGHT
 from flappy_trainer.game_managers.game_manager import GameManager
 from flappy_trainer.utils import GameState
 
+TRAINING_FILE_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "training_curricula.yaml")
+
 
 class AITrainer:
-    """
-    Trainer for the Flappy Bird AI. Handles running episodes, managing game states,
-    and training the reinforcement learning agent.
-    """
-
     def __init__(self):
         self.agent = ReinforcementLearningAgent()
         self.batch_size = 32
 
-    def train(self, debug=True) -> Sequential:
-        print("\nEPIC 1: NO PIPES, 2 moves per second")
-        self._train_epic(num_episodes=1000, action_tick=30, target_frames=1200, is_pipes_active=False)
-        self.agent.reset()
+    def train(self) -> Sequential:
+        # Load the curriculum file
+        with open(TRAINING_FILE_PATH, "r") as training_file:
+            curricula = yaml.safe_load(training_file)
 
-        print("\nEPIC 2: NO PIPES, 3 moves per second")
-        self._train_epic(num_episodes=1000, action_tick=20, target_frames=1200, is_pipes_active=False)
-        self.agent.reset()
+        # Iterate through each curriculum and train
+        for curriculum in curricula:
+            print(f"\n{curriculum['name']}")
+            self._train_curriculum(
+                num_episodes=curriculum["num_episodes"],
+                action_tick=curriculum["action_tick"],
+                target_frames=curriculum["target_frames"],
+                is_pipes_active=curriculum["is_pipes_active"],
+                pipe_gap_size_mode=curriculum.get("pipe_gap_size_mode"),
+                pipe_distance_mode=curriculum.get("pipe_distance_mode"),
+                is_pipe_gaps_alternating=curriculum.get("is_pipe_gaps_alternating"),
+            )
+            self.agent.reset()
 
-        print("\nEPIC 3: NO PIPES, 4 moves per second")
-        self._train_epic(num_episodes=1000, action_tick=15, target_frames=1200, is_pipes_active=False)
-        self.agent.reset()
-
-        print("\nEPIC 4: ALTERNATING LARGE GAPS WITH PIPES FAR APART")
-        self._train_epic(
-            num_episodes=1000,
-            action_tick=15,
-            target_frames=1200,
-            is_pipes_active=True,
-            pipe_gap_size_mode="large",
-            pipe_distance_mode="large",
-            is_pipe_gaps_alternating=True,
-        )
-        self.agent.reset()
-
-        print("\nEPIC 5: ALTERNATING SMALL GAPS WITH PIPES FAR APART")
-        self._train_epic(
-            num_episodes=1000,
-            action_tick=15,
-            target_frames=1200,
-            is_pipes_active=True,
-            pipe_gap_size_mode="small",
-            pipe_distance_mode="large",
-            is_pipe_gaps_alternating=True,
-        )
-        self.agent.reset()
-
-        print("\nEPIC 6: RANDOM SMALL GAPS WITH PIPES FAR APART")
-        self._train_epic(
-            num_episodes=1000,
-            action_tick=15,
-            target_frames=1200,
-            is_pipes_active=True,
-            pipe_gap_size_mode="small",
-            pipe_distance_mode="large",
-        )
-        self.agent.reset()
-
-        print("\nEPIC 7: FULL GAME")
-        self._train_epic(
-            num_episodes=1000,
-            action_tick=15,
-            target_frames=5000,
-            is_pipes_active=True,
-        )
         return self.agent.model
 
-    def _train_epic(
+    def _train_curriculum(
         self,
         num_episodes: int,
         action_tick: int,
@@ -92,7 +69,6 @@ class AITrainer:
         pipe_distance_mode: str = "random",
         is_pipe_gaps_centered: bool = False,
         is_pipe_gaps_alternating: bool = False,
-        debug: bool = True,
     ):
         self.game_manager = GameManager(
             is_pipes_active, pipe_gap_size_mode, pipe_distance_mode, is_pipe_gaps_centered, is_pipe_gaps_alternating
@@ -107,18 +83,19 @@ class AITrainer:
 
             while self.game_manager.state is GameState.RUNNING and current_frame < target_frames:
                 # Update the game (60 fps)
-                update_game(self.game_manager, frames=1, debug=True)
+                self.game_manager.update(1 / 60)
                 current_frame += 1
 
-                # Assess game every 30 frames
+                # Assess game on the first frame and every action tick
                 if current_frame == 1 or current_frame % action_tick == 0:
-                    # Agent makes an action and it is stored for later
+                    # Agent makes an action and action is stored to create knowledge for later
                     current_state = self._get_current_state()
                     action = self.agent.choose_action(current_state)
-                    self._apply_action(action)
+                    if action == Action.FLAP:
+                        self.game_manager.bird.flap()
                     pending_knowledge.append((current_state, action, current_frame))
 
-                    # If 30 frames have passed since the action, create and store knowledge
+                    # If an action tick has occured since an action, create and store knowledge
                     for action_made in pending_knowledge[:]:
                         pre_state, action, action_frame = action_made
                         if current_frame - action_frame >= action_tick:
@@ -127,7 +104,7 @@ class AITrainer:
                             self.agent.remember(knowledge)
                             pending_knowledge.remove(action_made)
 
-                # Train the agent on the memories every second
+                # Train the agent on the memories at set intervals
                 if current_frame % replay_interval == 0:
                     self.agent.replay(self.batch_size)
 
@@ -141,33 +118,20 @@ class AITrainer:
             else:
                 num_correct_in_a_row += 1
 
-            print_debug_output(debug, episode, num_episodes, self.agent.exploration_rate, current_frame, action_tick)
-
-            # Stop training if 10 episodes are successfully completed in a row
+            print_debug_output(
+                episode, num_episodes, self.agent.exploration_rate, current_frame, action_tick, target_frames
+            )
             if num_correct_in_a_row >= 10:
                 print(f"\tTraining stopped after {episode + 1} episodes. 10 successful episodes in a row!")
                 break
 
     def _create_knowledge(self, pre_state, action, current_state) -> Knowledge | None:
-        # Penalize game over heavily
-        if self.game_manager.state == GameState.GAME_OVER:
-            return Knowledge(pre_state, action, -100, None)
-
-        # Reward if bird is closer to the target
-        pre_distance_to_target = abs(
-            pre_state.bird_vert_pos / SCREEN_HEIGHT - pre_state.next_pipe_gap_pos / SCREEN_HEIGHT
-        )
-        post_distance_to_target = abs(
-            current_state.bird_vert_pos / SCREEN_HEIGHT - current_state.next_pipe_gap_pos / SCREEN_HEIGHT
-        )
-        delta_distance = pre_distance_to_target - post_distance_to_target
-        reward = delta_distance * 100
-
+        # Reward is based on if the action from the pre_state caused death in the current_state
+        if self.game_manager.state == GameState.GAME_OVER or current_state is None:
+            reward = -1
+        else:
+            reward = 1
         return Knowledge(pre_state, action, reward, current_state)
-
-    def _apply_action(self, action: Action):
-        if action == Action.FLAP:
-            self.game_manager.bird.flap()
 
     def _get_current_state(self) -> EnvironmentState:
         bird_is_alive = self.game_manager.state == GameState.RUNNING
@@ -175,6 +139,9 @@ class AITrainer:
         bird_vert_velocity = self.game_manager.bird.y_velocity
         pipe_velocity = get_curr_pipe_velocity(self.game_manager)
         distance_to_next_pipe, next_pipe_gap_pos, next_pipe_gap_height = get_nearest_pipe_details(self.game_manager)
+        distance_to_second_pipe, second_pipe_gap_pos, second_pipe_gap_height = get_second_nearest_pipe_details(
+            self.game_manager
+        )
 
         return EnvironmentState(
             bird_is_alive=bird_is_alive,
@@ -184,4 +151,7 @@ class AITrainer:
             next_pipe_distance=distance_to_next_pipe,
             next_pipe_gap_pos=next_pipe_gap_pos,
             next_pipe_gap_height=next_pipe_gap_height,
+            second_pipe_distance=distance_to_second_pipe,
+            second_pipe_gap_pos=second_pipe_gap_pos,
+            second_pipe_gap_height=second_pipe_gap_height,
         )
