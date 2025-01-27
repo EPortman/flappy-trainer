@@ -2,6 +2,8 @@
   num_episodes: 1000
   action_tick: 30
   target_frames: 1200
+  initial_exploration_rate: 0.7
+  exploration_rate_decay: 0.9896  # Min @ 300 episodes
   is_pipes_active: false
   pipe_gap_size_mode: "random"
   pipe_distance_mode: "random"
@@ -11,6 +13,8 @@
   num_episodes: 1000
   action_tick: 20
   target_frames: 1200
+  initial_exploration_rate: 0.6
+  exploration_rate_decay: 0.9851  # Min @ 200 episodes
   is_pipes_active: false
   pipe_gap_size_mode: "random"
   pipe_distance_mode: "random"
@@ -20,6 +24,8 @@
   num_episodes: 1000
   action_tick: 15
   target_frames: 1200
+  initial_exploration_rate: 0.5
+  exploration_rate_decay: 0.9723  # Min @ 100 episodes
   is_pipes_active: false
   pipe_gap_size_mode: "random"
   pipe_distance_mode: "random"
@@ -29,6 +35,8 @@
   num_episodes: 1000
   action_tick: 15
   target_frames: 1200
+  initial_exploration_rate: 0.5
+  exploration_rate_decay: 0.9723  # Min @ 100 episodes
   is_pipes_active: false
   pipe_gap_size_mode: "large"
   pipe_distance_mode: "large"
@@ -38,6 +46,8 @@
   num_episodes: 1000
   action_tick: 15
   target_frames: 1200
+  initial_exploration_rate: 0.5
+  exploration_rate_decay: 0.9723  # Min @ 100 episodes
   is_pipes_active: false
   pipe_gap_size_mode: "random"
   pipe_distance_mode: "large"
@@ -47,6 +57,8 @@
   num_episodes: 1000
   action_tick: 15
   target_frames: 1200
+  initial_exploration_rate: 0.5
+  exploration_rate_decay: 0.9723  # Min @ 100 episodes
   is_pipes_active: false
   pipe_gap_size_mode: "small"
   pipe_distance_mode: "large"
@@ -56,78 +68,118 @@
   num_episodes: 1000
   action_tick: 15
   target_frames: 1200
+  initial_exploration_rate: 0.5
+  exploration_rate_decay: 0.9723  # Min @ 100 episodes
   is_pipes_active: false
   pipe_gap_size_mode: "large"
   pipe_distance_mode: "large"
   pipe_gap_loc_mode: "top"
 
-- name: "CURRICULUM 8: SMALL TOP GAPS WITH PIPES FAR APART"
+- name: "CURRICULUM 8: TOP GAPS WITH PIPES FAR APART"
   num_episodes: 1000
   action_tick: 15
   target_frames: 1200
+  initial_exploration_rate: 0.5
+  exploration_rate_decay: 0.9723  # Min @ 100 episodes
+  is_pipes_active: false
+  pipe_gap_size_mode: "random"
+  pipe_distance_mode: "large"
+  pipe_gap_loc_mode: "top"
+
+- name: "CURRICULUM 9: SMALL TOP GAPS WITH PIPES FAR APART"
+  num_episodes: 1000
+  action_tick: 15
+  target_frames: 1200
+  initial_exploration_rate: 0.5
+  exploration_rate_decay: 0.9723  # Min @ 100 episodes
   is_pipes_active: false
   pipe_gap_size_mode: "small"
   pipe_distance_mode: "large"
   pipe_gap_loc_mode: "top"
 
-- name: "CURRICULUM 9: LARGE BOTTOM GAPS WITH PIPES FAR APART"
+- name: "CURRICULUM 10: LARGE BOTTOM GAPS WITH PIPES FAR APART"
   num_episodes: 1000
   action_tick: 15
   target_frames: 1200
+  initial_exploration_rate: 0.5
+  exploration_rate_decay: 0.9723  # Min @ 100 episodes
   is_pipes_active: false
   pipe_gap_size_mode: "large"
   pipe_distance_mode: "large"
   pipe_gap_loc_mode: "bottom"
 
-- name: "CURRICULUM 10: SMALL BOTTOM GAPS WITH PIPES FAR APART"
+- name: "CURRICULUM 11: BOTTOM GAPS WITH PIPES FAR APART"
   num_episodes: 1000
   action_tick: 15
   target_frames: 1200
+  initial_exploration_rate: 0.5
+  exploration_rate_decay: 0.9723  # Min @ 100 episodes
+  is_pipes_active: false
+  pipe_gap_size_mode: "random"
+  pipe_distance_mode: "large"
+  pipe_gap_loc_mode: "bottom"
+
+- name: "CURRICULUM 12: SMALL BOTTOM GAPS WITH PIPES FAR APART"
+  num_episodes: 1000
+  action_tick: 15
+  target_frames: 1200
+  initial_exploration_rate: 0.5
+  exploration_rate_decay: 0.9723  # Min @ 100 episodes
   is_pipes_active: false
   pipe_gap_size_mode: "small"
   pipe_distance_mode: "large"
   pipe_gap_loc_mode: "bottom"
 
-- name: "CURRICULUM 11: ALTERNATING LARGE GAPS WITH PIPES FAR APART"
+- name: "CURRICULUM 13: ALTERNATING LARGE GAPS WITH PIPES FAR APART"
   num_episodes: 1000
   action_tick: 15
   target_frames: 1200
+  initial_exploration_rate: 0.5
+  exploration_rate_decay: 0.9723  # Min @ 100 episodes
   is_pipes_active: true
   pipe_gap_size_mode: "large"
   pipe_distance_mode: "large"
   pipe_gap_loc_mode: "alternating"
 
-- name: "CURRICULUM 12: ALTERNATING GAPS WITH PIPES FAR APART"
+- name: "CURRICULUM 14: ALTERNATING GAPS WITH PIPES FAR APART"
   num_episodes: 1000
   action_tick: 15
   target_frames: 1200
+  initial_exploration_rate: 0.5
+  exploration_rate_decay: 0.9723  # Min @ 100 episodes
   is_pipes_active: true
   pipe_gap_size_mode: "random"
   pipe_distance_mode: "large"
   pipe_gap_loc_mode: "alternating"
 
-- name: "CURRICULUM 13: ALTERNATING SMALL GAPS WITH PIPES FAR APART"
+- name: "CURRICULUM 15: ALTERNATING SMALL GAPS WITH PIPES FAR APART"
   num_episodes: 1000
   action_tick: 15
   target_frames: 1200
+  initial_exploration_rate: 0.5
+  exploration_rate_decay: 0.9723  # Min @ 100 episodes
   is_pipes_active: true
   pipe_gap_size_mode: "small"
   pipe_distance_mode: "large"
   pipe_gap_loc_mode: "alternating"
 
-- name: "CURRICULUM 13: RANDOM SMALL GAPS WITH PIPES FAR APART"
+- name: "CURRICULUM 16: RANDOM SMALL GAPS WITH PIPES FAR APART"
   num_episodes: 1000
   action_tick: 15
   target_frames: 1200
+  initial_exploration_rate: 0.5
+  exploration_rate_decay: 0.9723  # Min @ 100 episodes
   is_pipes_active: true
   pipe_gap_size_mode: "small"
   pipe_distance_mode: "large"
   pipe_gap_loc_mode: "random"
 
-- name: "CURRICULUM 14: FULL GAME"
+- name: "CURRICULUM 17: FULL GAME"
   num_episodes: 1000
   action_tick: 15
-  target_frames: 5000
+  target_frames: 3600
+  initial_exploration_rate: 0.4
+  exploration_rate_decay: 0.9871  # Min @ 200 episodes
   is_pipes_active: true
   pipe_gap_size_mode: "random"
   pipe_distance_mode: "random"

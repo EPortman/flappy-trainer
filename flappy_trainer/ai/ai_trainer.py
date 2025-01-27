@@ -50,6 +50,8 @@ class AITrainer:
                 num_episodes=curriculum["num_episodes"],
                 action_tick=curriculum["action_tick"],
                 target_frames=curriculum["target_frames"],
+                initial_exploration_rate=curriculum["initial_exploration_rate"],
+                exploration_rate_decay=curriculum["exploration_rate_decay"],
                 is_pipes_active=curriculum["is_pipes_active"],
                 pipe_gap_size_mode=curriculum.get("pipe_gap_size_mode"),
                 pipe_distance_mode=curriculum.get("pipe_distance_mode"),
@@ -64,12 +66,15 @@ class AITrainer:
         num_episodes: int,
         action_tick: int,
         target_frames: int,
+        initial_exploration_rate: float,
+        exploration_rate_decay: float,
         is_pipes_active: bool,
         pipe_gap_size_mode: str,
         pipe_distance_mode: str,
         pipe_gap_loc_mode: str,
     ):
         self.game_manager = GameManager(is_pipes_active, pipe_gap_size_mode, pipe_distance_mode, pipe_gap_loc_mode)
+        self.agent.reset(initial_exploration_rate, exploration_rate_decay)
         replay_interval = action_tick * 3
         num_correct_in_a_row = 0
 
@@ -114,6 +119,12 @@ class AITrainer:
                 num_correct_in_a_row = 0
             else:
                 num_correct_in_a_row += 1
+
+            # Decay exploration rate after each episode
+            self.agent.exploration_rate = max(
+                self.agent.min_exploration_rate,
+                self.agent.exploration_rate * self.agent.exploration_decay,
+            )
 
             print_debug_output(
                 episode, num_episodes, self.agent.exploration_rate, current_frame, action_tick, target_frames

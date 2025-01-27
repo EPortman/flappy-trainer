@@ -19,17 +19,13 @@ class ReinforcementLearningAgent:
     def __init__(self):
         self.model: Sequential = self._create_model()
         self.memory: deque[Knowledge] = deque(maxlen=AGENT_MAX_MEMORY)
-        self.exploration_rate = 1.0
         self.discount_factor = 0.9
         self.min_exploration_rate = 0.03
-        self.exploration_decay = 0.995
 
-    def reset(self):
-        self.memory: deque[Knowledge] = deque(maxlen=AGENT_MAX_MEMORY)
-        self.exploration_rate = 1.0
-        self.discount_factor = 0.9
-        self.min_exploration_rate = 0.03
-        self.exploration_decay = 0.995
+    def reset(self, exploration_rate: float, exploration_decay: float):
+        self.memory.clear()
+        self.exploration_rate = exploration_rate
+        self.exploration_decay = exploration_decay
 
     def _create_model(self) -> Sequential:
         """Define and compile the neural network model."""
@@ -86,6 +82,3 @@ class ReinforcementLearningAgent:
 
         # Train the model
         self.model.fit(np.array(states), np.array(targets), epochs=1, verbose=0)
-
-        # Decay exploration rate
-        self.exploration_rate = max(self.min_exploration_rate, self.exploration_rate * self.exploration_decay)
