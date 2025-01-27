@@ -54,7 +54,7 @@ class EnvironmentState:
                 self.second_pipe_gap_pos / SCREEN_HEIGHT,
                 self.second_pipe_gap_height / SCREEN_HEIGHT,
             ],
-            dtype=np.float32,
+            dtype=np.float16,
         )
         if include_batch_dim:
             return data.reshape(1, -1)

@@ -3,7 +3,7 @@
   action_tick: 30
   target_frames: 1200
   initial_exploration_rate: 0.7
-  exploration_rate_decay: 0.9896  # Min @ 300 episodes
+  exploration_rate_decay: 0.9896  # Min @ 500 episodes
   is_pipes_active: false
   pipe_gap_size_mode: "random"
   pipe_distance_mode: "random"
