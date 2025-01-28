@@ -37,7 +37,7 @@
   target_frames: 1200
   initial_exploration_rate: 0.5
   exploration_rate_decay: 0.9723  # Min @ 100 episodes
-  is_pipes_active: false
+  is_pipes_active: true
   pipe_gap_size_mode: "large"
   pipe_distance_mode: "large"
   pipe_gap_loc_mode: "center"
@@ -48,7 +48,7 @@
   target_frames: 1200
   initial_exploration_rate: 0.5
   exploration_rate_decay: 0.9723  # Min @ 100 episodes
-  is_pipes_active: false
+  is_pipes_active: true
   pipe_gap_size_mode: "random"
   pipe_distance_mode: "large"
   pipe_gap_loc_mode: "center"
@@ -59,7 +59,7 @@
   target_frames: 1200
   initial_exploration_rate: 0.5
   exploration_rate_decay: 0.9723  # Min @ 100 episodes
-  is_pipes_active: false
+  is_pipes_active: true
   pipe_gap_size_mode: "small"
   pipe_distance_mode: "large"
   pipe_gap_loc_mode: "center"
@@ -70,7 +70,7 @@
   target_frames: 1200
   initial_exploration_rate: 0.5
   exploration_rate_decay: 0.9723  # Min @ 100 episodes
-  is_pipes_active: false
+  is_pipes_active: true
   pipe_gap_size_mode: "large"
   pipe_distance_mode: "large"
   pipe_gap_loc_mode: "top"
@@ -81,7 +81,7 @@
   target_frames: 1200
   initial_exploration_rate: 0.5
   exploration_rate_decay: 0.9723  # Min @ 100 episodes
-  is_pipes_active: false
+  is_pipes_active: true
   pipe_gap_size_mode: "random"
   pipe_distance_mode: "large"
   pipe_gap_loc_mode: "top"
@@ -92,7 +92,7 @@
   target_frames: 1200
   initial_exploration_rate: 0.5
   exploration_rate_decay: 0.9723  # Min @ 100 episodes
-  is_pipes_active: false
+  is_pipes_active: true
   pipe_gap_size_mode: "small"
   pipe_distance_mode: "large"
   pipe_gap_loc_mode: "top"
@@ -103,7 +103,7 @@
   target_frames: 1200
   initial_exploration_rate: 0.5
   exploration_rate_decay: 0.9723  # Min @ 100 episodes
-  is_pipes_active: false
+  is_pipes_active: true
   pipe_gap_size_mode: "large"
   pipe_distance_mode: "large"
   pipe_gap_loc_mode: "bottom"
@@ -114,7 +114,7 @@
   target_frames: 1200
   initial_exploration_rate: 0.5
   exploration_rate_decay: 0.9723  # Min @ 100 episodes
-  is_pipes_active: false
+  is_pipes_active: true
   pipe_gap_size_mode: "random"
   pipe_distance_mode: "large"
   pipe_gap_loc_mode: "bottom"
@@ -125,7 +125,7 @@
   target_frames: 1200
   initial_exploration_rate: 0.5
   exploration_rate_decay: 0.9723  # Min @ 100 episodes
-  is_pipes_active: false
+  is_pipes_active: true
   pipe_gap_size_mode: "small"
   pipe_distance_mode: "large"
   pipe_gap_loc_mode: "bottom"
