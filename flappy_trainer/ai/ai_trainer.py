@@ -57,7 +57,6 @@ class AITrainer:
                 pipe_distance_mode=curriculum.get("pipe_distance_mode"),
                 pipe_gap_loc_mode=curriculum.get("pipe_gap_loc_mode"),
             )
-            self.agent.reset()
 
         return self.agent.model
 

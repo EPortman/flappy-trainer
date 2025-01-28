@@ -1,5 +1,6 @@
 import os
 import random
+
 import pygame
 
 from flappy_trainer.ai.ai_trainer import AITrainer

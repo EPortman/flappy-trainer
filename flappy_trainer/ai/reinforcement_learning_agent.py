@@ -3,8 +3,8 @@ from collections import deque
 
 import numpy as np
 from tensorflow.keras.layers import Dense
-from tensorflow.keras.models import Sequential
 from tensorflow.keras.mixed_precision import set_global_policy
+from tensorflow.keras.models import Sequential
 
 from flappy_trainer.ai.ai_utils import Action, Knowledge
 from flappy_trainer.ai.environment_state import EnvironmentState
@@ -18,9 +18,9 @@ class ReinforcementLearningAgent:
     """
 
     def __init__(self):
-        set_global_policy('mixed_float16')
+        set_global_policy("mixed_float16")
         self.model: Sequential = self._create_model()
-        self.memory: deque[Knowledge] = deque(maxlen=3000)
+        self.memory: deque[Knowledge] = deque(maxlen=AGENT_MAX_MEMORY)
         self.discount_factor = 0.9
         self.min_exploration_rate = 0.03
 
@@ -35,7 +35,7 @@ class ReinforcementLearningAgent:
                 Dense(128, input_dim=EnvironmentState.get_num_features(), activation="relu"),
                 Dense(64, activation="relu"),
                 Dense(32, activation="relu"),
-                Dense(2, activation="linear", dtype='float32'),
+                Dense(2, activation="linear", dtype="float32"),
             ]
         )
         model.compile(optimizer="adam", loss="mean_squared_error")
