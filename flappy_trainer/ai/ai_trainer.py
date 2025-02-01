@@ -12,153 +12,101 @@ Key Features:
 - Generates training data (knowledge) based on game events
 """
 
-import os
-
-import yaml
-from tensorflow.keras.models import Sequential
-
-from flappy_trainer.ai.ai_utils import (
-    Action,
-    Knowledge,
-    get_curr_pipe_velocity,
-    get_nearest_pipe_details,
-    get_second_nearest_pipe_details,
-    print_debug_output,
-)
-from flappy_trainer.ai.environment_state import EnvironmentState
+from flappy_trainer.ai.ai_utils import Action, Knowledge, get_current_state, record_training_output
 from flappy_trainer.ai.reinforcement_learning_agent import ReinforcementLearningAgent
 from flappy_trainer.game_managers.game_manager import GameManager
 from flappy_trainer.utils import GameState
 
-TRAINING_FILE_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "training_curricula.yaml")
-
 
 class AITrainer:
-    def __init__(self):
-        self.agent = ReinforcementLearningAgent()
-        self.batch_size = 32
+    def __init__(self, model_path: str = None):
+        self.agent = ReinforcementLearningAgent(model_path)
+        self.action_tick = 15  # 4 actions per second (60 fps)
+        self.replay_interval = 45  # Replay every 3 actions
+        self.batch_size = 32  # Replay 32 memories at a time
 
-    def train(self) -> Sequential:
-        # Load the curriculum file
-        with open(TRAINING_FILE_PATH, "r") as training_file:
-            curricula = yaml.safe_load(training_file)
+    def train_gravity(self, csv_file_name: str):
+        num_episodes = 2
+        max_frames_per_episode = 1000
+        explore_rate = 0.7
+        explore_rate_decay = 0.9937
+        min_explore_rate = 0.25
+        self.agent.set_exploration_rate(explore_rate)
+        game_manager = GameManager(is_pipes=False)
 
-        # Iterate through each curriculum and train
-        for curriculum in curricula:
-            print(f"\n{curriculum['name']}")
-            self._train_curriculum(
-                num_episodes=curriculum["num_episodes"],
-                action_tick=curriculum["action_tick"],
-                target_frames=curriculum["target_frames"],
-                initial_exploration_rate=curriculum["initial_exploration_rate"],
-                exploration_rate_decay=curriculum["exploration_rate_decay"],
-                is_pipes_active=curriculum["is_pipes_active"],
-                pipe_gap_size_mode=curriculum.get("pipe_gap_size_mode"),
-                pipe_distance_mode=curriculum.get("pipe_distance_mode"),
-                pipe_gap_loc_mode=curriculum.get("pipe_gap_loc_mode"),
-            )
+        print(f"Begin Gravity Training: {num_episodes} episodes total")
+        for i in range(num_episodes):
+            frames_survived = self._run_training_episode(game_manager, max_frames_per_episode)
+            record_training_output(i + 1, explore_rate, frames_survived, csv_file_name)
+            explore_rate = max(min_explore_rate, explore_rate * explore_rate_decay)
+            self.agent.set_exploration_rate(explore_rate)
 
-        return self.agent.model
-
-    def _train_curriculum(
+    def train_full_game(
         self,
-        num_episodes: int,
-        action_tick: int,
-        target_frames: int,
-        initial_exploration_rate: float,
-        exploration_rate_decay: float,
-        is_pipes_active: bool,
-        pipe_gap_size_mode: str,
-        pipe_distance_mode: str,
-        pipe_gap_loc_mode: str,
+        num_curricula: int,
+        episodes_per_curricula: int,
+        init_explore_rate: float,
+        explore_rate_decay: float,
+        min_explore_rate: float,
+        csv_file_name: str,
     ):
-        self.game_manager = GameManager(is_pipes_active, pipe_gap_size_mode, pipe_distance_mode, pipe_gap_loc_mode)
-        self.agent.reset(initial_exploration_rate, exploration_rate_decay)
-        replay_interval = action_tick * 3
-        num_correct_in_a_row = 0
+        max_frames_per_episode = 3000
+        explore_rate = init_explore_rate
+        self.agent.set_exploration_rate(explore_rate)
+        game_manager = GameManager(is_pipes=True)
 
-        for episode in range(num_episodes):
-            self.game_manager.start_game()
-            current_frame = 0
-            pending_knowledge = []
+        print(f"Begin Full Game Training: {num_curricula} curricula at {episodes_per_curricula} episodes each.")
+        for curricula in range(num_curricula):
+            print(f"Being Curricula {curricula + 1} of full game training. Reset Exploration Rate")
+            for i in range(episodes_per_curricula):
+                frames_survived = self._run_training_episode(game_manager, max_frames_per_episode)
+                record_training_output(i + 1, explore_rate, frames_survived, csv_file_name, curricula)
+                explore_rate = max(min_explore_rate, explore_rate * explore_rate_decay)
+                self.agent.set_exploration_rate(explore_rate)
 
-            while self.game_manager.state is GameState.RUNNING and current_frame < target_frames:
-                # Update the game (60 fps)
-                self.game_manager.update(1 / 60)
-                current_frame += 1
-
-                # Assess game on the first frame and every action tick
-                if current_frame == 1 or current_frame % action_tick == 0:
-                    # Agent makes an action and action is stored to create knowledge for later
-                    current_state = self._get_current_state()
-                    action = self.agent.choose_action(current_state)
-                    if action == Action.FLAP:
-                        self.game_manager.bird.flap()
-                    pending_knowledge.append((current_state, action, current_frame))
-
-                    # If an action tick has occured since an action, create and store knowledge
-                    for action_made in pending_knowledge[:]:
-                        pre_state, action, action_frame = action_made
-                        if current_frame - action_frame >= action_tick:
-                            post_state = self._get_current_state()
-                            knowledge = self._create_knowledge(pre_state, action, post_state)
-                            self.agent.remember(knowledge)
-                            pending_knowledge.remove(action_made)
-
-                # Train the agent on the memories at set intervals
-                if current_frame % replay_interval == 0:
-                    self.agent.replay(self.batch_size)
-
-            if current_frame < target_frames:
-                # Always remember the move that caused death
-                if pending_knowledge is not None:
-                    pre_state, action, action_frame = pending_knowledge[-1]
-                    knowledge = self._create_knowledge(pre_state, action, None)
-                    self.agent.remember(knowledge)
-                num_correct_in_a_row = 0
-            else:
-                num_correct_in_a_row += 1
-
-            # Decay exploration rate after each episode
-            self.agent.exploration_rate = max(
-                self.agent.min_exploration_rate,
-                self.agent.exploration_rate * self.agent.exploration_decay,
-            )
-
-            print_debug_output(
-                episode, num_episodes, self.agent.exploration_rate, current_frame, action_tick, target_frames
-            )
-            if num_correct_in_a_row >= 10:
-                print(f"\tTraining stopped after {episode + 1} episodes. 10 successful episodes in a row!")
-                break
-
-    def _create_knowledge(self, pre_state, action, current_state) -> Knowledge | None:
+    def _create_knowledge(self, pre_state, action, current_state, game_manager) -> Knowledge | None:
         # Reward is based on if the action from the pre_state caused death in the current_state
-        if self.game_manager.state == GameState.GAME_OVER or current_state is None:
+        if game_manager.state == GameState.GAME_OVER or current_state is None:
             reward = -1
         else:
             reward = 1
         return Knowledge(pre_state, action, reward, current_state)
 
-    def _get_current_state(self) -> EnvironmentState:
-        bird_is_alive = self.game_manager.state == GameState.RUNNING
-        bird_vert_pos = self.game_manager.bird.y_pos
-        bird_vert_velocity = self.game_manager.bird.y_velocity
-        pipe_velocity = get_curr_pipe_velocity(self.game_manager)
-        distance_to_next_pipe, next_pipe_gap_pos, next_pipe_gap_height = get_nearest_pipe_details(self.game_manager)
-        distance_to_second_pipe, second_pipe_gap_pos, second_pipe_gap_height = get_second_nearest_pipe_details(
-            self.game_manager
-        )
+    def _run_training_episode(self, game_manager: GameManager, max_frames: int) -> int:
+        game_manager.start_game()
+        current_frame = 0
+        pending_knowledge = []
+        while game_manager.state is GameState.RUNNING and current_frame < max_frames:
+            # Update the game (60 fps)
+            game_manager.update(1 / 60)
+            current_frame += 1
 
-        return EnvironmentState(
-            bird_is_alive=bird_is_alive,
-            bird_vert_pos=bird_vert_pos,
-            bird_vert_velocity=bird_vert_velocity,
-            pipe_velocity=pipe_velocity,
-            next_pipe_distance=distance_to_next_pipe,
-            next_pipe_gap_pos=next_pipe_gap_pos,
-            next_pipe_gap_height=next_pipe_gap_height,
-            second_pipe_distance=distance_to_second_pipe,
-            second_pipe_gap_pos=second_pipe_gap_pos,
-            second_pipe_gap_height=second_pipe_gap_height,
-        )
+            # Assess game on the first frame and every action tick
+            if current_frame == 1 or current_frame % self.action_tick == 0:
+                # Agent makes an action and action is stored to create knowledge for later
+                current_state = get_current_state(game_manager)
+                action = self.agent.choose_action(current_state)
+                if action == Action.FLAP:
+                    game_manager.bird.flap()
+                pending_knowledge.append((current_state, action, current_frame))
+
+                # If an action tick has occured since an action, create and store knowledge
+                for action_made in pending_knowledge[:]:
+                    pre_state, action, action_frame = action_made
+                    if current_frame - action_frame >= self.action_tick:
+                        post_state = get_current_state(game_manager)
+                        knowledge = self._create_knowledge(pre_state, action, post_state, game_manager)
+                        self.agent.remember(knowledge)
+                        pending_knowledge.remove(action_made)
+
+                # Train the agent on the memories at set intervals
+                if current_frame % self.replay_interval == 0:
+                    self.agent.replay(self.batch_size)
+
+                if current_frame < max_frames:
+                    # Always remember the move that caused death
+                    if pending_knowledge is not None:
+                        pre_state, action, action_frame = pending_knowledge[-1]
+                        knowledge = self._create_knowledge(pre_state, action, None, game_manager)
+                        self.agent.remember(knowledge)
+        return current_frame

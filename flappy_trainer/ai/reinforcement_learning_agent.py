@@ -1,10 +1,11 @@
+import os
 import random
 from collections import deque
 
 import numpy as np
 from tensorflow.keras.layers import Dense
 from tensorflow.keras.mixed_precision import set_global_policy
-from tensorflow.keras.models import Sequential
+from tensorflow.keras.models import Sequential, load_model
 
 from flappy_trainer.ai.ai_utils import Action, Knowledge
 from flappy_trainer.ai.environment_state import EnvironmentState
@@ -17,16 +18,19 @@ class ReinforcementLearningAgent:
     for state-action pairs and trains via experience replay.
     """
 
-    def __init__(self):
-        set_global_policy("mixed_float16")
-        self.model: Sequential = self._create_model()
+    def __init__(self, model_path: str = None):
+        if model_path and os.path.exists(model_path):
+            self.model = load_model(model_path)
+            print(f"Model loaded from {model_path}")
+        else:
+            self.model: Sequential = self._create_model()
         self.memory: deque[Knowledge] = deque(maxlen=AGENT_MAX_MEMORY)
         self.discount_factor = 0.9
         self.min_exploration_rate = 0.03
+        set_global_policy("mixed_float16")
 
-    def reset(self, exploration_rate: float, exploration_decay: float):
+    def set_exploration_rate(self, exploration_rate: float):
         self.exploration_rate = exploration_rate
-        self.exploration_decay = exploration_decay
 
     def _create_model(self) -> Sequential:
         """Define and compile the neural network model."""
